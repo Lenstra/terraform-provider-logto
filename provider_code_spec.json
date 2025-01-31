@@ -1,0 +1,93 @@
+{
+	"datasources": [
+		{
+			"name": "application",
+			"schema": {
+				"attributes": [
+					{
+						"name": "name",
+						"string": {
+							"computed_optional_required": "computed"
+						}
+					}
+				]
+			}
+		}
+	],
+	"provider": {
+		"name": "logto"
+	},
+	"resources": [
+		{
+			"name": "application",
+			"schema": {
+				"attributes": [
+					{
+						"name": "description",
+						"string": {
+							"computed_optional_required": "computed_optional"
+						}
+					},
+					{
+						"name": "name",
+						"string": {
+							"computed_optional_required": "required",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.LengthBetween(1, 256)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "type",
+						"string": {
+							"computed_optional_required": "required",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.OneOf(\n\"Native\",\n\"SPA\",\n\"Traditional\",\n\"MachineToMachine\",\n\"Protected\",\n\"SAML\",\n)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "id",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "The unique identifier of the application."
+						}
+					},
+					{
+						"name": "secret",
+						"string": {
+							"computed_optional_required": "computed",
+							"deprecation_message": "This attribute is deprecated.",
+							"description": "The internal client secret. Note it is only used for internal validation, and the actual secrets should be retrieved from `/api/applications/{id}/secrets` endpoints."
+						}
+					},
+					{
+						"name": "tenant_id",
+						"string": {
+							"computed_optional_required": "computed"
+						}
+					}
+				]
+			}
+		}
+	],
+	"version": "0.1"
+}
