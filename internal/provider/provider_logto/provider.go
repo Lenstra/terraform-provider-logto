@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 
+	"github.com/Lenstra/terraform-provider-logto/internal/provider/resource_application"
+
 	"github.com/Lenstra/terraform-provider-logto/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -139,7 +141,7 @@ func (p *logtoProvider) Configure(ctx context.Context, req provider.ConfigureReq
 
 	apiClient := client.NewClient(tenant_id, access_token)
 
-	// Make the SimpleMDM client available during DataSource and Resource
+	// Make the Logto client available during DataSource and Resource
 	// type Configure methods.
 	resp.DataSourceData = apiClient
 	resp.ResourceData = apiClient
@@ -155,6 +157,6 @@ func (p *logtoProvider) DataSources(_ context.Context) []func() datasource.DataS
 // Resources defines the resources implemented in the provider.
 func (p *logtoProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		//ApplicationResource,
+		resource_application.ApplicationResource,
 	}
 }
