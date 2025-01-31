@@ -173,10 +173,10 @@ func (r *applicationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	plan.Id = types.StringValue(application.LogtoDefaultStruct.Id)
-	plan.TenantId = types.StringValue(application.LogtoDefaultStruct.TenantId)
-	plan.Name = types.StringValue(application.LogtoDefaultStruct.Name)
-	plan.Description = types.StringValue(application.LogtoDefaultStruct.Description)
+	plan.Id = types.StringValue(application.Id)
+	plan.TenantId = types.StringValue(application.TenantId)
+	plan.Name = types.StringValue(application.Name)
+	plan.Description = types.StringValue(application.Description)
 	plan.Type = types.StringValue(application.Type)
 
 	diags = resp.State.Set(ctx, plan)
