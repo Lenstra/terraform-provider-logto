@@ -26,7 +26,7 @@ func NewClient(tenantId string, accessToken string) *Client {
 }
 
 // 200 response code
-func (c *Client) RequestResponse200(req *http.Request) ([]byte, error) {
+func (c *Client) requestResponse200(req *http.Request) ([]byte, error) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.accessToken))
 	res, err := c.httpClient.Do(req)
 	if err != nil {
@@ -52,7 +52,7 @@ func (c *Client) RequestResponse200(req *http.Request) ([]byte, error) {
 }
 
 // 201 response code
-func (c *Client) RequestResponse201(req *http.Request) ([]byte, error) {
+func (c *Client) requestResponse201(req *http.Request) ([]byte, error) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.accessToken))
 	res, err := c.httpClient.Do(req)
 	if err != nil {
@@ -78,7 +78,7 @@ func (c *Client) RequestResponse201(req *http.Request) ([]byte, error) {
 }
 
 // 202 response code
-func (c *Client) RequestResponse202(req *http.Request) ([]byte, error) {
+func (c *Client) requestResponse202(req *http.Request) ([]byte, error) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.accessToken))
 	res, err := c.httpClient.Do(req)
 	if err != nil {
@@ -104,7 +104,7 @@ func (c *Client) RequestResponse202(req *http.Request) ([]byte, error) {
 }
 
 // 204 response code
-func (c *Client) RequestResponse204(req *http.Request) ([]byte, error) {
+func (c *Client) requestResponse204(req *http.Request) ([]byte, error) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.accessToken))
 	res, err := c.httpClient.Do(req)
 	if err != nil {

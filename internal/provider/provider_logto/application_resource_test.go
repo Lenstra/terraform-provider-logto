@@ -1,19 +1,18 @@
-package resource_application_test
+package provider_logto
 
 import (
 	"testing"
 
-	"github.com/Lenstra/terraform-provider-logto/internal/provider/provider_logto"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccApplicationResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: provider_logto.TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: provider_logto.ProviderConfig + `
+				Config: ProviderConfig + `
 							resource "logto_application" "test_app" {
 									name = "test"
 									description = "test app"
@@ -35,7 +34,7 @@ func TestAccApplicationResource(t *testing.T) {
 			},
 			// Update and Read testing
 			{
-				Config: provider_logto.ProviderConfig + `
+				Config: ProviderConfig + `
 							resource "logto_application" "test_app" {
 									name = "test modified"
 									description = "test app modified"

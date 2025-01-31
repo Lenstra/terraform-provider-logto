@@ -14,7 +14,7 @@ func (c *Client) ApplicationGet(id string) (*ApplicationModel, error) {
 		return nil, err
 	}
 
-	body, err := c.RequestResponse200(req)
+	body, err := c.requestResponse200(req)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *Client) ApplicationCreate(name, description, appType string) (*Applicat
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	body, err := c.RequestResponse200(req)
+	body, err := c.requestResponse200(req)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (c *Client) ApplicationDelete(id string) error {
 		return err
 	}
 
-	_, err = c.RequestResponse204(req)
+	_, err = c.requestResponse204(req)
 	return err
 }
 
@@ -90,7 +90,7 @@ func (c *Client) ApplicationUpdate(id string, name string, description string) (
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	body, err := c.RequestResponse200(req)
+	body, err := c.requestResponse200(req)
 	if err != nil {
 		return nil, err
 	}
