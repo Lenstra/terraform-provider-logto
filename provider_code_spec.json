@@ -72,14 +72,6 @@
 						}
 					},
 					{
-						"name": "secret",
-						"string": {
-							"computed_optional_required": "computed",
-							"deprecation_message": "This attribute is deprecated.",
-							"description": "The internal client secret. Note it is only used for internal validation, and the actual secrets should be retrieved from `/api/applications/{id}/secrets` endpoints."
-						}
-					},
-					{
 						"name": "tenant_id",
 						"string": {
 							"computed_optional_required": "computed"

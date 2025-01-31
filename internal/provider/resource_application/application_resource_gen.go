@@ -29,12 +29,6 @@ func ApplicationResourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.LengthBetween(1, 256),
 				},
 			},
-			"secret": schema.StringAttribute{
-				Computed:            true,
-				Description:         "The internal client secret. Note it is only used for internal validation, and the actual secrets should be retrieved from `/api/applications/{id}/secrets` endpoints.",
-				MarkdownDescription: "The internal client secret. Note it is only used for internal validation, and the actual secrets should be retrieved from `/api/applications/{id}/secrets` endpoints.",
-				DeprecationMessage:  "This attribute is deprecated.",
-			},
 			"tenant_id": schema.StringAttribute{
 				Computed: true,
 			},
@@ -59,7 +53,6 @@ type ApplicationModel struct {
 	Description types.String `tfsdk:"description"`
 	Id          types.String `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
-	Secret      types.String `tfsdk:"secret"`
 	TenantId    types.String `tfsdk:"tenant_id"`
 	Type        types.String `tfsdk:"type"`
 }

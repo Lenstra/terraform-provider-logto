@@ -21,6 +21,7 @@ resources:
         - createdAt
         - customClientMetadata
         - customData
+        - secret
         - isAdmin
         - isThirdParty
         - protectedAppMetadata
