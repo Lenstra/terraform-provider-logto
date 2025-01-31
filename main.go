@@ -4,10 +4,12 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"log"
 
-	"github.com/Lenstra/terraform-provider-logto/internal/provider"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
+	"github.com/Lenstra/terraform-provider-logto/internal/provider/provider_logto"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 
 // Run "go generate" to format example terraform files and generate the docs for the registry/website
@@ -35,13 +37,14 @@ func main() {
 	flag.BoolVar(&debugMode, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 
-	opts := &plugin.ServeOpts{
-		Debug: debugMode,
-
-		ProviderAddr: "github.com/Lenstra/terraform-provider-logto",
-
-		ProviderFunc: provider.New(version),
+	opts := providerserver.ServeOpts{
+		Address: "github.com/Lenstra/terraform-provider-logto",
+		Debug:   debugMode,
 	}
 
-	plugin.Serve(opts)
+	err := providerserver.Serve(context.Background(), provider_logto.New(version), opts)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }
