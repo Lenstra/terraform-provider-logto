@@ -2,7 +2,7 @@ package client
 
 type LogtoDefaultStruct struct {
 	TenantId    string `json:"tenantId"`
-	Id          int    `json:"id"`
+	Id          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
@@ -37,7 +37,7 @@ type ProtectedAppMetadata struct {
 
 type ApplicationModel struct {
 	LogtoDefaultStruct
-	Type                 string                 `json:"type,omitempty"`
+	Type                 string                 `json:"type"`
 	OidcClientMetadata   OidcClientMetadata     `json:"oidcClientMetadata"`
 	CustomClientMetadata CustomClientMetadata   `json:"customClientMetadata"`
 	CustomData           map[string]interface{} `json:"customData"`

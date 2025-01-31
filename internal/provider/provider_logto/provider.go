@@ -40,8 +40,8 @@ type logtoProvider struct {
 
 // logtoProviderModel maps provider schema data to a Go type.
 type logtoProviderModel struct {
-	TenantId    types.String `tfsdk:"tenantId"`
-	AccessToken types.String `tfsdk:"accessKey"`
+	TenantId    types.String `tfsdk:"tenant_id"`
+	AccessToken types.String `tfsdk:"access_token"`
 }
 
 // Metadata returns the provider type name.
@@ -55,11 +55,11 @@ func (p *logtoProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp
 		Description: "Logto terraform provider developed by Lenstra.",
 		Attributes: map[string]schema.Attribute{
 			"tenant_id": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Description: "API tenant_id for you instance, can be set as environment variable LOGTO_TENANT_ID",
 			},
 			"access_token": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Description: "API key for you instance, can be set as environment variable LOGTO_ACCESS_TOKEN",
 			},
 		},

@@ -46,7 +46,7 @@ func (c *Client) ApplicationCreate(name, description, appType string) (*Applicat
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	body, err := c.RequestResponse201(req)
+	body, err := c.RequestResponse200(req)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,9 @@ func (c *Client) ApplicationDelete(id string) error {
 	return err
 }
 
-func (c *Client) ApplicationUpdate(id string, name, description string) (*ApplicationModel, error) {
+func (c *Client) ApplicationUpdate(id string, name string, description string) (*ApplicationModel, error) {
+	fmt.Printf("ID: %+v\n", id)
+
 	url := fmt.Sprintf("https://%s.logto.app/api/applications/%s", c.tenantId, id)
 
 	jsonBody, err := json.Marshal(map[string]string{

@@ -2,7 +2,6 @@ package resource_application
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/Lenstra/terraform-provider-logto/client"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -76,7 +75,19 @@ func (r *applicationResource) Create(ctx context.Context, req resource.CreateReq
 		)
 	}
 
-	plan.Id = types.StringValue(strconv.Itoa(application.Id))
+	if application == nil {
+		resp.Diagnostics.AddError(
+			"Error creating application",
+			"Received nil application from API but no error",
+		)
+		return
+	}
+
+	plan.Id = types.StringValue(application.LogtoDefaultStruct.Id)
+	plan.TenantId = types.StringValue(application.LogtoDefaultStruct.TenantId)
+	plan.Name = types.StringValue(application.LogtoDefaultStruct.Name)
+	plan.Description = types.StringValue(application.LogtoDefaultStruct.Description)
+	plan.Type = types.StringValue(application.Type)
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -121,9 +132,9 @@ func (r *applicationResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	state.Name = types.StringValue(application.Name)
-	state.Description = types.StringValue(application.Description)
-	state.TenantId = types.StringValue(application.TenantId)
+	state.Name = types.StringValue(application.LogtoDefaultStruct.Name)
+	state.Description = types.StringValue(application.LogtoDefaultStruct.Description)
+	state.TenantId = types.StringValue(application.LogtoDefaultStruct.TenantId)
 	state.Type = types.StringValue(application.Type)
 
 	diags = resp.State.Set(ctx, &state)
@@ -134,17 +145,22 @@ func (r *applicationResource) Read(ctx context.Context, req resource.ReadRequest
 }
 
 func (r *applicationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan ApplicationModel
+	var plan, state ApplicationModel
 
-	diags := req.Plan.Get(ctx, &plan)
+	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Generate API request body from plan
+	diags = req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	application, err := r.client.ApplicationUpdate(
-		plan.Id.ValueString(),
+		state.Id.ValueString(),
 		plan.Name.ValueString(),
 		plan.Description.ValueString(),
 	)
@@ -157,12 +173,12 @@ func (r *applicationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	plan.Name = types.StringValue(application.Name)
-	plan.Description = types.StringValue(application.Description)
+	plan.Id = types.StringValue(application.LogtoDefaultStruct.Id)
+	plan.TenantId = types.StringValue(application.LogtoDefaultStruct.TenantId)
+	plan.Name = types.StringValue(application.LogtoDefaultStruct.Name)
+	plan.Description = types.StringValue(application.LogtoDefaultStruct.Description)
+	plan.Type = types.StringValue(application.Type)
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
