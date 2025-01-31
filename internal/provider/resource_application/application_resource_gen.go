@@ -31,6 +31,10 @@ func ApplicationResourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.LengthBetween(1, 256),
 				},
 			},
+			"secrets": schema.MapAttribute{
+				ElementType: types.StringType,
+				Computed:    true,
+			},
 			"tenant_id": schema.StringAttribute{
 				Computed: true,
 			},
@@ -51,6 +55,7 @@ type ApplicationModel struct {
 	Description types.String `tfsdk:"description"`
 	Id          types.String `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
+	Secrets     types.Map    `tfsdk:"secrets"`
 	TenantId    types.String `tfsdk:"tenant_id"`
 	Type        types.String `tfsdk:"type"`
 }

@@ -88,6 +88,15 @@
 						"string": {
 							"computed_optional_required": "computed"
 						}
+					},
+					{
+						"name": "secrets",
+						"map": {
+							"computed_optional_required": "computed",
+							"element_type": {
+									"string": {}
+							}
+						}
 					}
 				]
 			}
