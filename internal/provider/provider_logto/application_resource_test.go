@@ -20,10 +20,14 @@ func TestAccApplicationResourceWithoutTypeUpdate(t *testing.T) {
 							}
 							`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("logto_application.test_app", "id"),
+					// Verify attributes
 					resource.TestCheckResourceAttr("logto_application.test_app", "name", "test"),
 					resource.TestCheckResourceAttr("logto_application.test_app", "description", "test app"),
 					resource.TestCheckResourceAttr("logto_application.test_app", "type", "MachineToMachine"),
+
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("logto_application.test_app", "id"),
+					resource.TestCheckResourceAttrSet("logto_application.test_app", "secrets.%"),
 				),
 			},
 			// ImportState testing
@@ -42,10 +46,14 @@ func TestAccApplicationResourceWithoutTypeUpdate(t *testing.T) {
 							}
 							`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("logto_application.test_app", "id"),
+					// Verify attributes
 					resource.TestCheckResourceAttr("logto_application.test_app", "name", "test modified"),
 					resource.TestCheckResourceAttr("logto_application.test_app", "description", "test app modified"),
 					resource.TestCheckResourceAttr("logto_application.test_app", "type", "MachineToMachine"),
+
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("logto_application.test_app", "id"),
+					resource.TestCheckResourceAttrSet("logto_application.test_app", "secrets.%"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -67,10 +75,14 @@ func TestAccApplicationResourceWithTypeUpdate(t *testing.T) {
 							}
 							`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("logto_application.test_app", "id"),
+					// Verify attributes
 					resource.TestCheckResourceAttr("logto_application.test_app", "name", "test"),
 					resource.TestCheckResourceAttr("logto_application.test_app", "description", "test app"),
 					resource.TestCheckResourceAttr("logto_application.test_app", "type", "MachineToMachine"),
+
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("logto_application.test_app", "id"),
+					resource.TestCheckResourceAttrSet("logto_application.test_app", "secrets.%"),
 				),
 			},
 			// ImportState testing
@@ -89,10 +101,14 @@ func TestAccApplicationResourceWithTypeUpdate(t *testing.T) {
 							}
 							`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("logto_application.test_app", "id"),
+					// Verify attributes
 					resource.TestCheckResourceAttr("logto_application.test_app", "name", "test modified"),
 					resource.TestCheckResourceAttr("logto_application.test_app", "description", "test app modified"),
 					resource.TestCheckResourceAttr("logto_application.test_app", "type", "Native"),
+
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("logto_application.test_app", "id"),
+					resource.TestCheckResourceAttrSet("logto_application.test_app", "secrets.%"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

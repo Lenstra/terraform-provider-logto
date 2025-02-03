@@ -43,4 +43,14 @@ type ApplicationModel struct {
 	CustomData           map[string]interface{} `json:"customData"`
 	ProtectedAppMetadata ProtectedAppMetadata   `json:"protectedAppMetadata"`
 	IsAdmin              bool                   `json:"isAdmin"`
+	Secrets              map[string]string
+}
+
+type Secret struct {
+	TenantId      string `json:"tenantId"`
+	ApplicationId string `json:"applicationId"`
+	Name          string `json:"name"`
+	Value         string `json:"value"`
+	//CreatedAt     string `json:"createdAt"` //FIXME: unexpected error: json: cannot unmarshal number into Go struct field Secret.createdAt of type string
+	//ExpiresAt     string `json:"expiresAt"` // So attributes disabled for now
 }

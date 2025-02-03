@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Lenstra/terraform-provider-logto/client"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -83,11 +84,23 @@ func (r *applicationResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
+	secretsMap := make(map[string]attr.Value)
+	for k, v := range application.Secrets {
+		secretsMap[k] = types.StringValue(v)
+	}
+
+	secretsValue, diags := types.MapValue(types.StringType, secretsMap)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	plan.Id = types.StringValue(application.LogtoDefaultStruct.Id)
 	plan.TenantId = types.StringValue(application.LogtoDefaultStruct.TenantId)
 	plan.Name = types.StringValue(application.LogtoDefaultStruct.Name)
 	plan.Description = types.StringValue(application.LogtoDefaultStruct.Description)
 	plan.Type = types.StringValue(application.Type)
+	plan.Secrets = secretsValue
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -132,10 +145,22 @@ func (r *applicationResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
+	secretsMap := make(map[string]attr.Value)
+	for k, v := range application.Secrets {
+		secretsMap[k] = types.StringValue(v)
+	}
+
+	secretsValue, diags := types.MapValue(types.StringType, secretsMap)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	state.Name = types.StringValue(application.LogtoDefaultStruct.Name)
 	state.Description = types.StringValue(application.LogtoDefaultStruct.Description)
 	state.TenantId = types.StringValue(application.LogtoDefaultStruct.TenantId)
 	state.Type = types.StringValue(application.Type)
+	state.Secrets = secretsValue
 
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -146,7 +171,6 @@ func (r *applicationResource) Read(ctx context.Context, req resource.ReadRequest
 
 func (r *applicationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan, state ApplicationModel
-
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -164,7 +188,6 @@ func (r *applicationResource) Update(ctx context.Context, req resource.UpdateReq
 		plan.Name.ValueString(),
 		plan.Description.ValueString(),
 	)
-
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating application",
@@ -173,11 +196,23 @@ func (r *applicationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
+	secretsMap := make(map[string]attr.Value)
+	for k, v := range application.Secrets {
+		secretsMap[k] = types.StringValue(v)
+	}
+
+	secretsValue, diags := types.MapValue(types.StringType, secretsMap)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	plan.Id = types.StringValue(application.Id)
 	plan.TenantId = types.StringValue(application.TenantId)
 	plan.Name = types.StringValue(application.Name)
 	plan.Description = types.StringValue(application.Description)
 	plan.Type = types.StringValue(application.Type)
+	plan.Secrets = secretsValue
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
