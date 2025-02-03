@@ -34,22 +34,41 @@ func (c *Client) ApplicationGet(id string) (*ApplicationModel, error) {
 	return &application, nil
 }
 
-func (c *Client) ApplicationCreate(name, description, appType string) (*ApplicationModel, error) {
+func (c *Client) ApplicationCreate(name string, description string, appType string, redirectUris []string, postLogoutRedirectUris []string) (*ApplicationModel, error) {
 	url := fmt.Sprintf("https://%s.logto.app/api/applications", c.tenantId)
 
-	jsonBody, err := json.Marshal(map[string]string{
-		"name":        name,
-		"description": description,
-		"type":        appType,
-	})
+	if postLogoutRedirectUris == nil {
+		postLogoutRedirectUris = []string{}
+	}
+
+	payload := map[string]interface{}{
+		"name": name,
+		"type": appType,
+		"oidcClientMetadata": OidcClientMetadata{
+			RedirectUris:           redirectUris,
+			PostLogoutRedirectUris: postLogoutRedirectUris,
+		},
+	}
+
+	if description != "" {
+		payload["description"] = description
+	}
+
+	jsonBody, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println("------- CREATE -------")
+	fmt.Printf("Request URL: %s\n", url)
+	fmt.Printf("Request Body: %s\n", string(jsonBody))
+	fmt.Println("----------------------")
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, err
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 
 	body, err := c.requestResponse200(req)
@@ -57,13 +76,13 @@ func (c *Client) ApplicationCreate(name, description, appType string) (*Applicat
 		return nil, err
 	}
 
-	application := ApplicationModel{}
-	err = json.Unmarshal(body, &application)
-	if err != nil {
+	var application ApplicationModel
+	if err := json.Unmarshal(body, &application); err != nil {
 		return nil, err
 	}
 
-	// Get secrets of the application.
+	fmt.Printf("Response Body: %s\n", string(body))
+
 	application.Secrets, err = c.getApplicationSecrets(application.Id)
 	if err != nil {
 		return nil, err
@@ -83,21 +102,46 @@ func (c *Client) ApplicationDelete(id string) error {
 	return err
 }
 
-func (c *Client) ApplicationUpdate(id string, name string, description string) (*ApplicationModel, error) {
+func (c *Client) ApplicationUpdate(
+	id string,
+	name string,
+	description string,
+	redirectUris []string,
+	postLogoutRedirectUris []string,
+) (*ApplicationModel, error) {
 	url := fmt.Sprintf("https://%s.logto.app/api/applications/%s", c.tenantId, id)
 
-	jsonBody, err := json.Marshal(map[string]string{
-		"name":        name,
-		"description": description,
-	})
-	if err != nil {
-		return nil, err
+	if postLogoutRedirectUris == nil {
+		postLogoutRedirectUris = []string{}
 	}
+
+	payload := map[string]interface{}{
+		"name": name,
+		"oidcClientMetadata": OidcClientMetadata{
+			RedirectUris:           redirectUris,
+			PostLogoutRedirectUris: postLogoutRedirectUris,
+		},
+	}
+
+	if description != "" {
+		payload["description"] = description
+	}
+
+	jsonBody, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling request: %v", err)
+	}
+
+	fmt.Print("------- UPDATE -------")
+	fmt.Printf("Request URL: %s\n", url)
+	fmt.Printf("Request Body: %s\n", string(jsonBody))
+	fmt.Print("----------------------")
 
 	req, err := http.NewRequest(http.MethodPatch, url, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating request: %v", err)
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 
 	body, err := c.requestResponse200(req)
@@ -105,18 +149,20 @@ func (c *Client) ApplicationUpdate(id string, name string, description string) (
 		return nil, err
 	}
 
-	application := &ApplicationModel{}
-	err = json.Unmarshal(body, application)
-	if err != nil {
-		return nil, err
+	fmt.Printf("Response Body: %s\n", string(body))
+
+	var application ApplicationModel
+	if err := json.Unmarshal(body, &application); err != nil {
+		return nil, fmt.Errorf("error unmarshaling response: %v", err)
 	}
 
+	// Get secrets of the application
 	application.Secrets, err = c.getApplicationSecrets(id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting secrets: %v", err)
 	}
 
-	return application, nil
+	return &application, nil
 }
 
 func (c *Client) getApplicationSecrets(applicationId string) (map[string]string, error) {

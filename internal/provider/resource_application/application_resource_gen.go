@@ -31,6 +31,14 @@ func ApplicationResourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.LengthBetween(1, 256),
 				},
 			},
+			"post_logout_redirect_uris": schema.SetAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+			},
+			"redirect_uris": schema.SetAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+			},
 			"secrets": schema.MapAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
@@ -52,10 +60,12 @@ func ApplicationResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type ApplicationModel struct {
-	Description types.String `tfsdk:"description"`
-	Id          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Secrets     types.Map    `tfsdk:"secrets"`
-	TenantId    types.String `tfsdk:"tenant_id"`
-	Type        types.String `tfsdk:"type"`
+	Description            types.String `tfsdk:"description"`
+	Id                     types.String `tfsdk:"id"`
+	Name                   types.String `tfsdk:"name"`
+	PostLogoutRedirectUris types.Set    `tfsdk:"post_logout_redirect_uris"`
+	RedirectUris           types.Set    `tfsdk:"redirect_uris"`
+	Secrets                types.Map    `tfsdk:"secrets"`
+	TenantId               types.String `tfsdk:"tenant_id"`
+	Type                   types.String `tfsdk:"type"`
 }

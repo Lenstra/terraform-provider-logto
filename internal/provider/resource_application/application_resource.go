@@ -58,6 +58,18 @@ func (r *applicationResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
+	redirectUris, err := convertSetToSlice(plan.RedirectUris)
+	if err != nil {
+		resp.Diagnostics.AddError("Redirect Uris Conversion Error", "Failed to convert redirect uris: "+err.Error())
+		return
+	}
+
+	postLogoutRedirectUris, err := convertSetToSlice(plan.PostLogoutRedirectUris)
+	if err != nil {
+		resp.Diagnostics.AddError("Post logout redirect uris Conversion Error", "Failed to convert post logout redirect uris: "+err.Error())
+		return
+	}
+
 	var description string
 	if !plan.Description.IsNull() {
 		description = plan.Description.ValueString()
@@ -67,6 +79,8 @@ func (r *applicationResource) Create(ctx context.Context, req resource.CreateReq
 		plan.Name.ValueString(),
 		description,
 		plan.Type.ValueString(),
+		redirectUris,
+		postLogoutRedirectUris,
 	)
 
 	if err != nil {
@@ -101,6 +115,24 @@ func (r *applicationResource) Create(ctx context.Context, req resource.CreateReq
 	plan.Description = types.StringValue(application.LogtoDefaultStruct.Description)
 	plan.Type = types.StringValue(application.Type)
 	plan.Secrets = secretsValue
+
+	if application.OidcClientMetadata.RedirectUris == nil || len(application.OidcClientMetadata.RedirectUris) == 0 {
+		plan.RedirectUris = types.SetNull(types.StringType)
+	} else {
+		redirectUrisSet, diags := types.SetValue(types.StringType, stringSliceToAttrValues(application.OidcClientMetadata.RedirectUris))
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		plan.RedirectUris = redirectUrisSet
+	}
+
+	// if !plan.RedirectUris.IsNull() {
+	// 	plan.RedirectUris = types.SetValueMust(types.StringType, stringSliceToAttrValues(application.OidcClientMetadata.RedirectUris))
+	// }
+	// if !plan.PostLogoutRedirectUris.IsNull() {
+	// 	plan.PostLogoutRedirectUris = types.SetValueMust(types.StringType, stringSliceToAttrValues(application.OidcClientMetadata.PostLogoutRedirectUris))
+	// }
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -162,6 +194,29 @@ func (r *applicationResource) Read(ctx context.Context, req resource.ReadRequest
 	state.Type = types.StringValue(application.Type)
 	state.Secrets = secretsValue
 
+	if application.OidcClientMetadata.RedirectUris == nil || len(application.OidcClientMetadata.RedirectUris) == 0 {
+		state.RedirectUris = types.SetNull(types.StringType)
+	} else {
+		redirectUrisSet, diags := types.SetValue(types.StringType, stringSliceToAttrValues(application.OidcClientMetadata.RedirectUris))
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		state.RedirectUris = redirectUrisSet
+	}
+
+	// if len(application.OidcClientMetadata.RedirectUris) == 0 {
+	// 	state.RedirectUris = types.SetNull(types.StringType)
+	// } else {
+	// 	state.RedirectUris = types.SetValueMust(types.StringType, stringSliceToAttrValues(application.OidcClientMetadata.RedirectUris))
+	// }
+
+	if len(application.OidcClientMetadata.PostLogoutRedirectUris) == 0 {
+		state.PostLogoutRedirectUris = types.SetNull(types.StringType)
+	} else {
+		state.PostLogoutRedirectUris = types.SetValueMust(types.StringType, stringSliceToAttrValues(application.OidcClientMetadata.PostLogoutRedirectUris))
+	}
+
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -183,10 +238,24 @@ func (r *applicationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
+	redirectUris, err := convertSetToSlice(plan.RedirectUris)
+	if err != nil {
+		resp.Diagnostics.AddError("Redirect Uris Conversion Error", "Failed to convert redirect uris: "+err.Error())
+		return
+	}
+
+	postLogoutRedirectUris, err := convertSetToSlice(plan.PostLogoutRedirectUris)
+	if err != nil {
+		resp.Diagnostics.AddError("Post logout redirect uris Conversion Error", "Failed to convert post logout redirect uris: "+err.Error())
+		return
+	}
+
 	application, err := r.client.ApplicationUpdate(
 		state.Id.ValueString(),
 		plan.Name.ValueString(),
 		plan.Description.ValueString(),
+		redirectUris,
+		postLogoutRedirectUris,
 	)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -214,6 +283,36 @@ func (r *applicationResource) Update(ctx context.Context, req resource.UpdateReq
 	plan.Type = types.StringValue(application.Type)
 	plan.Secrets = secretsValue
 
+	if len(application.OidcClientMetadata.RedirectUris) == 0 {
+		plan.RedirectUris = types.SetNull(types.StringType)
+	} else {
+		plan.RedirectUris = types.SetValueMust(types.StringType, stringSliceToAttrValues(application.OidcClientMetadata.RedirectUris))
+	}
+
+	if len(application.OidcClientMetadata.PostLogoutRedirectUris) == 0 {
+		plan.PostLogoutRedirectUris = types.SetNull(types.StringType)
+	} else {
+		plan.PostLogoutRedirectUris = types.SetValueMust(types.StringType, stringSliceToAttrValues(application.OidcClientMetadata.PostLogoutRedirectUris))
+	}
+
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
+}
+
+func convertSetToSlice(set types.Set) ([]string, error) {
+	if set.IsNull() || set.IsUnknown() {
+		return nil, nil
+	}
+
+	var result []string
+	set.ElementsAs(context.Background(), &result, false)
+	return result, nil
+}
+
+func stringSliceToAttrValues(slice []string) []attr.Value {
+	values := make([]attr.Value, len(slice))
+	for i, s := range slice {
+		values[i] = types.StringValue(s)
+	}
+	return values
 }

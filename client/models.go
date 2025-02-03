@@ -8,11 +8,11 @@ type LogtoDefaultStruct struct {
 }
 
 type OidcClientMetadata struct {
-	RedirectUris                     []interface{} `json:"redirectUris"`
-	PostLogoutRedirectUris           []string      `json:"postLogoutRedirectUris"`
-	BackchannelLogoutUri             string        `json:"backchannelLogoutUri"`
-	BackchannelLogoutSessionRequired bool          `json:"backchannelLogoutSessionRequired"`
-	LogoUri                          string        `json:"logoUri"`
+	RedirectUris                     []string `json:"redirectUris"`
+	PostLogoutRedirectUris           []string `json:"postLogoutRedirectUris"`
+	BackchannelLogoutUri             string   `json:"backchannelLogoutUri,omitempty"`
+	BackchannelLogoutSessionRequired bool     `json:"backchannelLogoutSessionRequired,omitempty"`
+	LogoUri                          string   `json:"logoUri,omitempty"`
 }
 
 type CustomClientMetadata struct {

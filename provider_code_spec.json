@@ -97,6 +97,24 @@
 									"string": {}
 							}
 						}
+					},
+					{
+						"name": "redirect_uris",
+						"set": {
+							"computed_optional_required": "optional",
+							"element_type": {
+									"string": {}
+							}
+						}
+					},
+					{
+						"name": "post_logout_redirect_uris",
+						"set": {
+							"computed_optional_required": "optional",
+							"element_type": {
+									"string": {}
+							}
+						}
 					}
 				]
 			}
