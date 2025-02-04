@@ -7,7 +7,8 @@
 					{
 						"name": "name",
 						"string": {
-							"computed_optional_required": "computed"
+							"computed_optional_required": "computed",
+							"description": "The name of the application."
 						}
 					}
 				]
@@ -25,13 +26,15 @@
 					{
 						"name": "description",
 						"string": {
-							"computed_optional_required": "computed_optional"
+							"computed_optional_required": "computed_optional",
+							"description": "The description of the application."
 						}
 					},
 					{
 						"name": "name",
 						"string": {
 							"computed_optional_required": "required",
+							"description": "The name of the application.",
 							"validators": [
 								{
 									"custom": {
@@ -50,6 +53,7 @@
 						"name": "type",
 						"string": {
 							 "computed_optional_required": "required",
+							 "description": "The type of the application that can take these values : Native, SPA, Traditional, MachineToMachine, Protected, SAML.",
 							 "plan_modifiers": [
 									 {
 											 "custom": {
