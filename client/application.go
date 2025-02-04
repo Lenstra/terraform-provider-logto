@@ -37,17 +37,28 @@ func (c *Client) ApplicationGet(id string) (*ApplicationModel, error) {
 func (c *Client) ApplicationCreate(name string, description string, appType string, redirectUris []string, postLogoutRedirectUris []string) (*ApplicationModel, error) {
 	url := fmt.Sprintf("https://%s.logto.app/api/applications", c.tenantId)
 
-	if postLogoutRedirectUris == nil {
-		postLogoutRedirectUris = []string{}
-	}
-
 	payload := map[string]interface{}{
 		"name": name,
 		"type": appType,
-		"oidcClientMetadata": OidcClientMetadata{
+	}
+
+	if description != "" {
+		payload["description"] = description
+	}
+
+	if len(redirectUris) > 0 || len(postLogoutRedirectUris) > 0 {
+		if redirectUris == nil {
+			redirectUris = []string{}
+		}
+
+		if postLogoutRedirectUris == nil {
+			postLogoutRedirectUris = []string{}
+		}
+
+		payload["oidcClientMetadata"] = OidcClientMetadata{
 			RedirectUris:           redirectUris,
 			PostLogoutRedirectUris: postLogoutRedirectUris,
-		},
+		}
 	}
 
 	if description != "" {
@@ -58,11 +69,6 @@ func (c *Client) ApplicationCreate(name string, description string, appType stri
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println("------- CREATE -------")
-	fmt.Printf("Request URL: %s\n", url)
-	fmt.Printf("Request Body: %s\n", string(jsonBody))
-	fmt.Println("----------------------")
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonBody))
 	if err != nil {
@@ -80,8 +86,6 @@ func (c *Client) ApplicationCreate(name string, description string, appType stri
 	if err := json.Unmarshal(body, &application); err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("Response Body: %s\n", string(body))
 
 	application.Secrets, err = c.getApplicationSecrets(application.Id)
 	if err != nil {
@@ -111,16 +115,27 @@ func (c *Client) ApplicationUpdate(
 ) (*ApplicationModel, error) {
 	url := fmt.Sprintf("https://%s.logto.app/api/applications/%s", c.tenantId, id)
 
-	if postLogoutRedirectUris == nil {
-		postLogoutRedirectUris = []string{}
-	}
-
 	payload := map[string]interface{}{
 		"name": name,
-		"oidcClientMetadata": OidcClientMetadata{
+	}
+
+	if description != "" {
+		payload["description"] = description
+	}
+
+	if len(redirectUris) > 0 || len(postLogoutRedirectUris) > 0 {
+		if redirectUris == nil {
+			redirectUris = []string{}
+		}
+
+		if postLogoutRedirectUris == nil {
+			postLogoutRedirectUris = []string{}
+		}
+
+		payload["oidcClientMetadata"] = OidcClientMetadata{
 			RedirectUris:           redirectUris,
 			PostLogoutRedirectUris: postLogoutRedirectUris,
-		},
+		}
 	}
 
 	if description != "" {
@@ -131,11 +146,6 @@ func (c *Client) ApplicationUpdate(
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling request: %v", err)
 	}
-
-	fmt.Print("------- UPDATE -------")
-	fmt.Printf("Request URL: %s\n", url)
-	fmt.Printf("Request Body: %s\n", string(jsonBody))
-	fmt.Print("----------------------")
 
 	req, err := http.NewRequest(http.MethodPatch, url, bytes.NewBuffer(jsonBody))
 	if err != nil {
@@ -148,8 +158,6 @@ func (c *Client) ApplicationUpdate(
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("Response Body: %s\n", string(body))
 
 	var application ApplicationModel
 	if err := json.Unmarshal(body, &application); err != nil {
