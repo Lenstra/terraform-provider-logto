@@ -106,12 +106,17 @@ func (p *logtoProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	tenant_id := os.Getenv("LOGTO_TENANT_ID")
 	access_token := os.Getenv("LOGTO_ACCESS_TOKEN")
 
-	tenant_id = config.TenantId.ValueString()
+	if !config.TenantId.IsNull() {
+		tenant_id = config.TenantId.ValueString()
+	}
+
+	if !config.AccessToken.IsNull() {
+		access_token = config.AccessToken.ValueString()
+	}
+
 	if tenant_id == "" {
 		tenant_id = "default"
 	}
-
-	access_token = config.AccessToken.ValueString()
 
 	// If any of the expected configurations are missing, return
 	// errors with provider-specific guidance.

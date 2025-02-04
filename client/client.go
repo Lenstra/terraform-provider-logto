@@ -52,6 +52,8 @@ func (c *Client) requestResponse200(req *http.Request) ([]byte, error) {
 }
 
 // 201 response code
+//
+//nolint:unused
 func (c *Client) requestResponse201(req *http.Request) ([]byte, error) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.accessToken))
 	res, err := c.httpClient.Do(req)
@@ -72,32 +74,6 @@ func (c *Client) requestResponse201(req *http.Request) ([]byte, error) {
 			return nil, fmt.Errorf("got a non 201 status code: %v", res.StatusCode)
 		}
 		return nil, fmt.Errorf("got a non 201 status code: %v - %s - %s", res.StatusCode, req.URL, resBody.String())
-	}
-
-	return body, nil
-}
-
-// 202 response code
-func (c *Client) requestResponse202(req *http.Request) ([]byte, error) {
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.accessToken))
-	res, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if res.StatusCode != http.StatusAccepted {
-		resBody := new(bytes.Buffer)
-		_, err = resBody.ReadFrom(res.Body)
-		if err != nil {
-			return nil, fmt.Errorf("got a non 202 status code: %v", res.StatusCode)
-		}
-		return nil, fmt.Errorf("got a non 202 status code: %v - %s - %s", res.StatusCode, req.URL, resBody.String())
 	}
 
 	return body, nil
