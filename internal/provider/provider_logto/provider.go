@@ -59,7 +59,7 @@ func (p *logtoProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp
 				Description: "API tenant_id for you instance, can be set as environment variable LOGTO_TENANT_ID",
 			},
 			"access_token": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Description: "Access token for you instance, can be set as environment variable LOGTO_ACCESS_TOKEN",
 			},
 		},
