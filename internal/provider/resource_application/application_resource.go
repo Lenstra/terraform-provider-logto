@@ -70,6 +70,12 @@ func (r *applicationResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
+	cors_allowed_origins, err := convertListToSlice(plan.CorsAllowedOrigins)
+	if err != nil {
+		resp.Diagnostics.AddError("Cors allowed origins Conversion Error", "Failed to convert cors allowed origins : "+err.Error())
+		return
+	}
+
 	var description string
 	if !plan.Description.IsNull() {
 		description = plan.Description.ValueString()
@@ -81,6 +87,7 @@ func (r *applicationResource) Create(ctx context.Context, req resource.CreateReq
 		plan.Type.ValueString(),
 		redirectUris,
 		postLogoutRedirectUris,
+		cors_allowed_origins,
 	)
 
 	if err != nil {
@@ -121,6 +128,9 @@ func (r *applicationResource) Create(ctx context.Context, req resource.CreateReq
 	}
 	if !plan.PostLogoutRedirectUris.IsNull() {
 		plan.PostLogoutRedirectUris = stringSliceToList(application.OidcClientMetadata.PostLogoutRedirectUris)
+	}
+	if !plan.CorsAllowedOrigins.IsNull() {
+		plan.CorsAllowedOrigins = stringSliceToList(application.CustomClientMetadata.CorsAllowedOrigins)
 	}
 
 	diags = resp.State.Set(ctx, plan)
@@ -195,6 +205,12 @@ func (r *applicationResource) Read(ctx context.Context, req resource.ReadRequest
 		state.PostLogoutRedirectUris = stringSliceToList(application.OidcClientMetadata.PostLogoutRedirectUris)
 	}
 
+	if len(application.CustomClientMetadata.CorsAllowedOrigins) == 0 {
+		state.CorsAllowedOrigins = types.ListNull(types.StringType)
+	} else {
+		state.CorsAllowedOrigins = stringSliceToList(application.CustomClientMetadata.CorsAllowedOrigins)
+	}
+
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -228,12 +244,19 @@ func (r *applicationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
+	corsAllowedOrigins, err := convertListToSlice(plan.CorsAllowedOrigins)
+	if err != nil {
+		resp.Diagnostics.AddError("Cors allowed origins Conversion Error", "Failed to convert post cors allowed origins: "+err.Error())
+		return
+	}
+
 	application, err := r.client.ApplicationUpdate(
 		state.Id.ValueString(),
 		plan.Name.ValueString(),
 		plan.Description.ValueString(),
 		redirectUris,
 		postLogoutRedirectUris,
+		corsAllowedOrigins,
 	)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -271,6 +294,12 @@ func (r *applicationResource) Update(ctx context.Context, req resource.UpdateReq
 		plan.PostLogoutRedirectUris = types.ListNull(types.StringType)
 	} else {
 		plan.PostLogoutRedirectUris = stringSliceToList((application.OidcClientMetadata.PostLogoutRedirectUris))
+	}
+
+	if len(application.CustomClientMetadata.CorsAllowedOrigins) == 0 {
+		plan.CorsAllowedOrigins = types.ListNull(types.StringType)
+	} else {
+		plan.CorsAllowedOrigins = stringSliceToList(application.CustomClientMetadata.CorsAllowedOrigins)
 	}
 
 	diags = resp.State.Set(ctx, plan)

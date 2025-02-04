@@ -34,7 +34,7 @@ func (c *Client) ApplicationGet(id string) (*ApplicationModel, error) {
 	return &application, nil
 }
 
-func (c *Client) ApplicationCreate(name string, description string, appType string, redirectUris []string, postLogoutRedirectUris []string) (*ApplicationModel, error) {
+func (c *Client) ApplicationCreate(name string, description string, appType string, redirectUris []string, postLogoutRedirectUris []string, corsAllowedOrigins []string) (*ApplicationModel, error) {
 	url := fmt.Sprintf("https://%s.logto.app/api/applications", c.tenantId)
 
 	payload := map[string]interface{}{
@@ -61,8 +61,10 @@ func (c *Client) ApplicationCreate(name string, description string, appType stri
 		}
 	}
 
-	if description != "" {
-		payload["description"] = description
+	if len(corsAllowedOrigins) > 0 {
+		payload["customClientMetadata"] = CustomClientMetadata{
+			CorsAllowedOrigins: corsAllowedOrigins,
+		}
 	}
 
 	jsonBody, err := json.Marshal(payload)
@@ -112,6 +114,7 @@ func (c *Client) ApplicationUpdate(
 	description string,
 	redirectUris []string,
 	postLogoutRedirectUris []string,
+	corsAllowedOrigins []string,
 ) (*ApplicationModel, error) {
 	url := fmt.Sprintf("https://%s.logto.app/api/applications/%s", c.tenantId, id)
 
@@ -138,8 +141,10 @@ func (c *Client) ApplicationUpdate(
 		}
 	}
 
-	if description != "" {
-		payload["description"] = description
+	if len(corsAllowedOrigins) > 0 {
+		payload["customClientMetadata"] = CustomClientMetadata{
+			CorsAllowedOrigins: corsAllowedOrigins,
+		}
 	}
 
 	jsonBody, err := json.Marshal(payload)

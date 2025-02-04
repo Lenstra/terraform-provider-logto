@@ -330,3 +330,67 @@ func TestAccApplicationResourceWithNotRedirectUrisAndPostLogoutRedirectUris(t *t
 		},
 	})
 }
+
+func TestAccApplicationResourceWithCorsAllowedOrigins(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: ProviderConfig + `
+							resource "logto_application" "test_app" {
+								name                      = "test"
+								description               = "test app"
+								type                      = "SPA"
+								cors_allowed_origins      = ["http://cors_allowed_origin_test.fr", "http://cors_allowed_origin_test.com"]
+							}
+							`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify attributes
+					resource.TestCheckResourceAttr("logto_application.test_app", "name", "test"),
+					resource.TestCheckResourceAttr("logto_application.test_app", "description", "test app"),
+					resource.TestCheckResourceAttr("logto_application.test_app", "type", "SPA"),
+
+					resource.TestCheckResourceAttr("logto_application.test_app", "cors_allowed_origins.#", "2"),
+					resource.TestCheckResourceAttr("logto_application.test_app", "cors_allowed_origins.0", "http://cors_allowed_origin_test.fr"),
+					resource.TestCheckResourceAttr("logto_application.test_app", "cors_allowed_origins.1", "http://cors_allowed_origin_test.com"),
+
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("logto_application.test_app", "id"),
+					resource.TestCheckResourceAttrSet("logto_application.test_app", "cors_allowed_origins.#"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "logto_application.test_app",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing
+			{
+				Config: ProviderConfig + `
+							resource "logto_application" "test_app" {
+								name                      = "test modified"
+								description               = "test app modified"
+								type                      = "SPA"
+								cors_allowed_origins      = ["http://cors_allowed_origin_test.com"]
+							}
+							`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify attributes
+					resource.TestCheckResourceAttr("logto_application.test_app", "name", "test modified"),
+					resource.TestCheckResourceAttr("logto_application.test_app", "description", "test app modified"),
+					resource.TestCheckResourceAttr("logto_application.test_app", "type", "SPA"),
+
+					resource.TestCheckResourceAttr("logto_application.test_app", "cors_allowed_origins.#", "1"),
+					resource.TestCheckResourceAttr("logto_application.test_app", "cors_allowed_origins.0", "http://cors_allowed_origin_test.com"),
+
+					// Verify dynamic values have any value set in the state.
+					resource.TestCheckResourceAttrSet("logto_application.test_app", "id"),
+					resource.TestCheckResourceAttrSet("logto_application.test_app", "cors_allowed_origins.#"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}

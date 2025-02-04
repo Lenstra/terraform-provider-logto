@@ -16,6 +16,10 @@ import (
 func ApplicationResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"cors_allowed_origins": schema.ListAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+			},
 			"description": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
@@ -60,6 +64,7 @@ func ApplicationResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type ApplicationModel struct {
+	CorsAllowedOrigins     types.List   `tfsdk:"cors_allowed_origins"`
 	Description            types.String `tfsdk:"description"`
 	Id                     types.String `tfsdk:"id"`
 	Name                   types.String `tfsdk:"name"`

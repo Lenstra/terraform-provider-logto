@@ -17,12 +17,12 @@ type OidcClientMetadata struct {
 
 type CustomClientMetadata struct {
 	CorsAllowedOrigins      []string `json:"corsAllowedOrigins"`
-	IdTokenTtl              float64  `json:"idTokenTtl"`
-	RefreshTokenTtl         float64  `json:"refreshTokenTtl"`
-	RefreshTokenTtlInDays   float64  `json:"refreshTokenTtlInDays"`
-	TenantId                string   `json:"tenantId"`
-	AlwaysIssueRefreshToken bool     `json:"alwaysIssueRefreshToken"`
-	RotateRefreshToken      bool     `json:"rotateRefreshToken"`
+	IdTokenTtl              float64  `json:"idTokenTtl,omitempty"`
+	RefreshTokenTtl         float64  `json:"refreshTokenTtl,omitempty"`
+	RefreshTokenTtlInDays   float64  `json:"refreshTokenTtlInDays,omitempty"`
+	TenantId                string   `json:"tenantId,omitempty"`
+	AlwaysIssueRefreshToken bool     `json:"alwaysIssueRefreshToken,omitempty"`
+	RotateRefreshToken      bool     `json:"rotateRefreshToken,omitempty"`
 }
 
 type PageRule struct {
