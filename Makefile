@@ -14,6 +14,6 @@ docs:
 	go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
 	tfplugindocs generate
 
-.PHONY generate
+.PHONY: generate
 generate:
 	go generate ./...
