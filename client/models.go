@@ -51,6 +51,4 @@ type Secret struct {
 	ApplicationId string `json:"applicationId"`
 	Name          string `json:"name"`
 	Value         string `json:"value"`
-	//CreatedAt     string `json:"createdAt"` //FIXME: unexpected error: json: cannot unmarshal number into Go struct field Secret.createdAt of type string
-	//ExpiresAt     string `json:"expiresAt"` // So attributes disabled for now
 }
