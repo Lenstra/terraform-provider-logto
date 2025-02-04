@@ -99,5 +99,5 @@ jobs:
         env:
           TF_ACC: "1"
           LOGTO_ACCESS_TOKEN: ${{ steps.get-token.outputs.token }}
-        run: go test -v -cover ./internal/provider/
+        run: go test -v -cover ./internal/provider/provider_logto
         timeout-minutes: 10
