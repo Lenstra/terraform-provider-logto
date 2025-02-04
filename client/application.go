@@ -89,6 +89,7 @@ func (c *Client) ApplicationCreate(name string, description string, appType stri
 		return nil, err
 	}
 
+	// Get secrets of the application
 	application.Secrets, err = c.getApplicationSecrets(application.Id)
 	if err != nil {
 		return nil, err
