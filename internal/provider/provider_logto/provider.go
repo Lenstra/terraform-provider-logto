@@ -59,8 +59,8 @@ func (p *logtoProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp
 				Description: "API tenant_id for you instance, can be set as environment variable LOGTO_TENANT_ID",
 			},
 			"access_token": schema.StringAttribute{
-				Optional:    true,
-				Description: "API key for you instance, can be set as environment variable LOGTO_ACCESS_TOKEN",
+				Required:    true,
+				Description: "Access token for you instance, can be set as environment variable LOGTO_ACCESS_TOKEN",
 			},
 		},
 	}
@@ -106,20 +106,15 @@ func (p *logtoProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	tenant_id := os.Getenv("LOGTO_TENANT_ID")
 	access_token := os.Getenv("LOGTO_ACCESS_TOKEN")
 
-	if !config.TenantId.IsNull() {
-		tenant_id = config.TenantId.ValueString()
-	}
-
-	if !config.AccessToken.IsNull() {
-		access_token = config.AccessToken.ValueString()
-	}
-
-	// If any of the expected configurations are missing, return
-	// errors with provider-specific guidance.
+	tenant_id = config.TenantId.ValueString()
 	if tenant_id == "" {
 		tenant_id = "default"
 	}
 
+	access_token = config.AccessToken.ValueString()
+
+	// If any of the expected configurations are missing, return
+	// errors with provider-specific guidance.
 	if access_token == "" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("access_token"),

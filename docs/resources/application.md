@@ -30,9 +30,13 @@ resource "logto_application" "app" {
 
 ### Optional
 
+- `cors_allowed_origins` (List of String)
 - `description` (String)
+- `post_logout_redirect_uris` (List of String)
+- `redirect_uris` (List of String)
 
 ### Read-Only
 
 - `id` (String) The unique identifier of the application.
+- `secrets` (Map of String)
 - `tenant_id` (String)
