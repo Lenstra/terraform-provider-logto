@@ -46,7 +46,10 @@ func Main() error {
 	if err != nil {
 		return err
 	}
-	f.Write(data)
+	_, err = f.Write(data)
+	if err != nil {
+		return err
+	}
 	f.Close()
 
 	cmd := exec.Command(
