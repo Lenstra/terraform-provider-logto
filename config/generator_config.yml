@@ -17,6 +17,7 @@ resources:
       method: DELETE
     schema:
       ignores:
+        - type
         - oidcClientMetadata
         - createdAt
         - customClientMetadata

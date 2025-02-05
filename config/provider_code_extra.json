@@ -5,6 +5,36 @@
 			"schema": {
 				"attributes": [
 					{
+						"name": "type",
+						"string": {
+							"computed_optional_required": "required",
+							"plan_modifiers": [
+								{
+									"custom": {
+											"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.RequiresReplace()"
+									}
+								}
+							],
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.OneOf(\n\"Native\",\n\"SPA\",\n\"Traditional\",\n\"MachineToMachine\",\n\"Protected\",\n\"SAML\",\n)"
+									}
+								}
+							]
+						}
+					},
+					{
 						"name": "secrets",
 						"map": {
 							"computed_optional_required": "computed",
