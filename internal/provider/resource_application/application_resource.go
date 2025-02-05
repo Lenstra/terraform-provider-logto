@@ -12,6 +12,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+// Ensure the implementation satisfies the expected interfaces.
+var (
+	_ resource.Resource                = &applicationResource{}
+	_ resource.ResourceWithConfigure   = &applicationResource{}
+	_ resource.ResourceWithImportState = &applicationResource{}
+)
+
 type applicationResource struct {
 	client *client.Client
 }
