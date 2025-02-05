@@ -139,7 +139,11 @@ func (p *logtoProvider) Configure(ctx context.Context, req provider.ConfigureReq
 
 	tflog.Debug(ctx, "Creating Logto client")
 
-	apiClient := client.NewClient(tenant_id, access_token)
+	conf := &client.Config{
+		TenantID:    tenant_id,
+		AccessToken: access_token,
+	}
+	apiClient := client.NewClient(conf)
 
 	// Make the Logto client available during DataSource and Resource
 	// type Configure methods.

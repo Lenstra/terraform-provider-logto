@@ -81,14 +81,19 @@ func (r *applicationResource) Create(ctx context.Context, req resource.CreateReq
 		description = plan.Description.ValueString()
 	}
 
-	application, err := r.client.ApplicationCreate(
-		plan.Name.ValueString(),
-		description,
-		plan.Type.ValueString(),
-		redirectUris,
-		postLogoutRedirectUris,
-		cors_allowed_origins,
-	)
+	application := &client.ApplicationModel{
+		Name:        plan.Name.ValueString(),
+		Description: description,
+		Type:        plan.Type.ValueString(),
+		OidcClientMetadata: client.OidcClientMetadata{
+			RedirectUris:           redirectUris,
+			PostLogoutRedirectUris: postLogoutRedirectUris,
+		},
+		CustomClientMetadata: client.CustomClientMetadata{
+			CorsAllowedOrigins: cors_allowed_origins,
+		},
+	}
+	application, err = r.client.ApplicationCreate(application)
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -116,7 +121,7 @@ func (r *applicationResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	plan.Id = types.StringValue(application.LogtoDefaultStruct.Id)
+	plan.Id = types.StringValue(application.LogtoDefaultStruct.ID)
 	plan.TenantId = types.StringValue(application.LogtoDefaultStruct.TenantId)
 	plan.Name = types.StringValue(application.LogtoDefaultStruct.Name)
 	plan.Description = types.StringValue(application.LogtoDefaultStruct.Description)
@@ -277,7 +282,7 @@ func (r *applicationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	plan.Id = types.StringValue(application.Id)
+	plan.Id = types.StringValue(application.ID)
 	plan.TenantId = types.StringValue(application.TenantId)
 	plan.Name = types.StringValue(application.Name)
 	plan.Description = types.StringValue(application.Description)

@@ -1,12 +1,5 @@
 package client
 
-type LogtoDefaultStruct struct {
-	TenantId    string `json:"tenantId"`
-	Id          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-}
-
 type OidcClientMetadata struct {
 	RedirectUris                     []string `json:"redirectUris"`
 	PostLogoutRedirectUris           []string `json:"postLogoutRedirectUris"`
@@ -16,7 +9,7 @@ type OidcClientMetadata struct {
 }
 
 type CustomClientMetadata struct {
-	CorsAllowedOrigins      []string `json:"corsAllowedOrigins"`
+	CorsAllowedOrigins      []string `json:"corsAllowedOrigins,omitempty"`
 	IdTokenTtl              float64  `json:"idTokenTtl,omitempty"`
 	RefreshTokenTtl         float64  `json:"refreshTokenTtl,omitempty"`
 	RefreshTokenTtlInDays   float64  `json:"refreshTokenTtlInDays,omitempty"`
@@ -36,14 +29,16 @@ type ProtectedAppMetadata struct {
 }
 
 type ApplicationModel struct {
-	LogtoDefaultStruct
+	TenantId             string                 `json:"tenantId,omitempty"`
+	ID                   string                 `json:"id,omitempty"`
+	Name                 string                 `json:"name"`
+	Description          string                 `json:"description,omitempty"`
 	Type                 string                 `json:"type"`
-	OidcClientMetadata   OidcClientMetadata     `json:"oidcClientMetadata"`
-	CustomClientMetadata CustomClientMetadata   `json:"customClientMetadata"`
-	CustomData           map[string]interface{} `json:"customData"`
-	ProtectedAppMetadata ProtectedAppMetadata   `json:"protectedAppMetadata"`
+	OidcClientMetadata   *OidcClientMetadata    `json:"oidcClientMetadata,omitempty"`
+	CustomClientMetadata *CustomClientMetadata  `json:"customClientMetadata,omitempty"`
+	CustomData           map[string]interface{} `json:"customData,omitempty"`
+	ProtectedAppMetadata *ProtectedAppMetadata  `json:"protectedAppMetadata,omitempty"`
 	IsAdmin              bool                   `json:"isAdmin"`
-	Secrets              map[string]string
 }
 
 type Secret struct {

@@ -1,206 +1,93 @@
 package client
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
 	"fmt"
 	"net/http"
 )
 
-func (c *Client) ApplicationGet(id string) (*ApplicationModel, error) {
-	url := fmt.Sprintf("https://%s.logto.app/api/applications/%s", c.tenantId, id)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+func (c *Client) ApplicationGet(ctx context.Context, id string) (*ApplicationModel, error) {
+	req := &request{
+		method: http.MethodGet,
+		path:   "api/applications/" + id,
+	}
+	res, err := expect(200, 404)(c.do(ctx, req))
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := c.requestResponse200(req)
-	if err != nil {
-		return nil, err
+	if res.StatusCode == 404 {
+		return nil, nil
 	}
 
-	application := ApplicationModel{}
-	err = json.Unmarshal(body, &application)
-	if err != nil {
+	var application ApplicationModel
+	if err := decode(res.Body, &application); err != nil {
 		return nil, err
 	}
-
-	// Get secrets of the application.
-	application.Secrets, err = c.getApplicationSecrets(id)
-	if err != nil {
-		return nil, err
-	}
-
 	return &application, nil
 }
 
-func (c *Client) ApplicationCreate(name string, description string, appType string, redirectUris []string, postLogoutRedirectUris []string, corsAllowedOrigins []string) (*ApplicationModel, error) {
-	url := fmt.Sprintf("https://%s.logto.app/api/applications", c.tenantId)
-
-	payload := map[string]interface{}{
-		"name": name,
-		"type": appType,
+func (c *Client) ApplicationCreate(ctx context.Context, app *ApplicationModel) (*ApplicationModel, error) {
+	req := &request{
+		method: http.MethodPost,
+		path:   "api/applications",
+		body:   app,
 	}
 
-	if description != "" {
-		payload["description"] = description
-	}
-
-	if len(redirectUris) > 0 || len(postLogoutRedirectUris) > 0 {
-		if redirectUris == nil {
-			redirectUris = []string{}
-		}
-
-		if postLogoutRedirectUris == nil {
-			postLogoutRedirectUris = []string{}
-		}
-
-		payload["oidcClientMetadata"] = OidcClientMetadata{
-			RedirectUris:           redirectUris,
-			PostLogoutRedirectUris: postLogoutRedirectUris,
-		}
-	}
-
-	if len(corsAllowedOrigins) > 0 {
-		payload["customClientMetadata"] = CustomClientMetadata{
-			CorsAllowedOrigins: corsAllowedOrigins,
-		}
-	}
-
-	jsonBody, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonBody))
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	body, err := c.requestResponse200(req)
+	res, err := expect(200)(c.do(ctx, req))
 	if err != nil {
 		return nil, err
 	}
 
 	var application ApplicationModel
-	if err := json.Unmarshal(body, &application); err != nil {
+	if err := decode(res.Body, &application); err != nil {
 		return nil, err
 	}
-
-	// Get secrets of the application
-	application.Secrets, err = c.getApplicationSecrets(application.Id)
-	if err != nil {
-		return nil, err
-	}
-
 	return &application, nil
 }
 
-func (c *Client) ApplicationDelete(id string) error {
-	url := fmt.Sprintf("https://%s.logto.app/api/applications/%s", c.tenantId, id)
-	req, err := http.NewRequest(http.MethodDelete, url, nil)
-	if err != nil {
-		return err
+func (c *Client) ApplicationDelete(ctx context.Context, id string) error {
+	req := &request{
+		method: http.MethodDelete,
+		path:   "api/applications/" + id,
 	}
-
-	_, err = c.requestResponse204(req)
+	_, err := expect(204)(c.do(ctx, req))
 	return err
 }
 
-func (c *Client) ApplicationUpdate(
-	id string,
-	name string,
-	description string,
-	redirectUris []string,
-	postLogoutRedirectUris []string,
-	corsAllowedOrigins []string,
-) (*ApplicationModel, error) {
-	url := fmt.Sprintf("https://%s.logto.app/api/applications/%s", c.tenantId, id)
-
-	payload := map[string]interface{}{
-		"name": name,
+func (c *Client) ApplicationUpdate(ctx context.Context, app *ApplicationModel) (*ApplicationModel, error) {
+	req := &request{
+		method: http.MethodPatch,
+		path:   "api/applications/" + app.ID,
+		body:   app,
 	}
 
-	if description != "" {
-		payload["description"] = description
-	}
-
-	if len(redirectUris) > 0 || len(postLogoutRedirectUris) > 0 {
-		if redirectUris == nil {
-			redirectUris = []string{}
-		}
-
-		if postLogoutRedirectUris == nil {
-			postLogoutRedirectUris = []string{}
-		}
-
-		payload["oidcClientMetadata"] = OidcClientMetadata{
-			RedirectUris:           redirectUris,
-			PostLogoutRedirectUris: postLogoutRedirectUris,
-		}
-	}
-
-	if len(corsAllowedOrigins) > 0 {
-		payload["customClientMetadata"] = CustomClientMetadata{
-			CorsAllowedOrigins: corsAllowedOrigins,
-		}
-	}
-
-	jsonBody, err := json.Marshal(payload)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling request: %v", err)
-	}
-
-	req, err := http.NewRequest(http.MethodPatch, url, bytes.NewBuffer(jsonBody))
-	if err != nil {
-		return nil, fmt.Errorf("error creating request: %v", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	body, err := c.requestResponse200(req)
+	res, err := expect(200)(c.do(ctx, req))
 	if err != nil {
 		return nil, err
 	}
 
 	var application ApplicationModel
-	if err := json.Unmarshal(body, &application); err != nil {
-		return nil, fmt.Errorf("error unmarshaling response: %v", err)
+	if err := decode(res.Body, &application); err != nil {
+		return nil, err
 	}
-
-	// Get secrets of the application
-	application.Secrets, err = c.getApplicationSecrets(id)
-	if err != nil {
-		return nil, fmt.Errorf("error getting secrets: %v", err)
-	}
-
 	return &application, nil
 }
 
-func (c *Client) getApplicationSecrets(applicationId string) (map[string]string, error) {
-	url := fmt.Sprintf("https://%s.logto.app/api/applications/%s/secrets", c.tenantId, applicationId)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+func (c *Client) GetApplicationSecrets(ctx context.Context, applicationId string) ([]Secret, error) {
+	req := &request{
+		method: http.MethodGet,
+		path:   fmt.Sprintf("api/applications/%s/secrets", applicationId),
+	}
+
+	res, err := expect(200)(c.do(ctx, req))
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := c.requestResponse200(req)
-	if err != nil {
+	var secrets []Secret
+	if err := decode(res.Body, &secrets); err != nil {
 		return nil, err
 	}
-
-	secrets := &[]Secret{}
-	err = json.Unmarshal(body, secrets)
-	if err != nil {
-		return nil, err
-	}
-
-	secretsTmp := make(map[string]string)
-	for _, secret := range *secrets {
-		secretsTmp[secret.Name] = secret.Value
-	}
-
-	return secretsTmp, nil
+	return secrets, nil
 }
