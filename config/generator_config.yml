@@ -26,22 +26,4 @@ resources:
         - isThirdParty
         - protectedAppMetadata
 
-data_sources:
-  application:
-    read:
-      path: /api/applications/{id}
-      method: GET
-    schema:
-      ignores:
-        - oidcClientMetadata
-        - createdAt
-        - customClientMetadata
-        - customData
-        - description
-        - id
-        - isAdmin
-        - isThirdParty
-        - protectedAppMetadata
-        - secret
-        - tenantId
-        - type
+datasources: []
