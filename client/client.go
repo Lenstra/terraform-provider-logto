@@ -11,6 +11,7 @@ import (
 	"os"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -41,6 +42,10 @@ func DefaultConfig() *Config {
 
 type Client struct {
 	conf *Config
+
+	accessTokenLock    sync.Mutex
+	accessToken        string
+	accessTokenExpires time.Time
 }
 
 func NewClient(config *Config) (*Client, error) {
@@ -102,6 +107,12 @@ func (r *request) toHttpRequest(ctx context.Context, conf *Config) (*http.Reques
 }
 
 func (c *Client) getAccessToken(ctx context.Context) (string, error) {
+	c.accessTokenLock.Lock()
+	defer c.accessTokenLock.Unlock()
+	if c.accessToken != "" && c.accessTokenExpires.Before(time.Now()) {
+		return c.accessToken, nil
+	}
+
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
 	data.Set("resource", fmt.Sprintf("https://%s/api", c.conf.Hostname))
@@ -143,7 +154,9 @@ func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("unexpected token type %q, expected %q", decodedResponse.TokenType, tokenType)
 	}
 
-	return decodedResponse.AccessToken, nil
+	c.accessToken = decodedResponse.AccessToken
+	c.accessTokenExpires = time.Now().Add(time.Duration(float64(decodedResponse.ExpiresIn) * 0.7))
+	return c.accessToken, nil
 }
 
 func (c *Client) do(ctx context.Context, r *request) (*http.Response, error) {
