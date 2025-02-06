@@ -79,26 +79,13 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
 
-      - name: Get Logto Access Token
-        id: get-token
-        run: |
-          TOKEN=$(curl --location \
-            --request POST 'https://${{ secrets.LOGTO_TENANT_ID }}.logto.app/oidc/token' \
-            --user '${{ secrets.LOGTO_CLIENT_ID }}:${{ secrets.LOGTO_CLIENT_SECRET }}' \
-            --header 'Content-Type: application/x-www-form-urlencoded' \
-            --data-urlencode 'grant_type=client_credentials' \
-            --data-urlencode 'resource=https://${{ secrets.LOGTO_TENANT_ID }}.logto.app/api' \
-            --data-urlencode 'scope=all' \
-            | jq -r '.access_token')
-          echo "::add-mask::$TOKEN"
-          echo "token=$TOKEN" >> $GITHUB_OUTPUT
-
       - run: go mod download
 
       - name: Run Tests
         env:
           TF_ACC: "1"
-          LOGTO_TENANT_ID: ${{ secrets.LOGTO_TENANT_ID }}
-          LOGTO_ACCESS_TOKEN: ${{ steps.get-token.outputs.token }}
+          LOGTO_HOSTNAME: ${{ secrets.LOGTO_HOSTNAME }}
+          LOGTO_APPLICATION_ID: ${{ secrets.LOGTO_APPLICATION_ID }}
+          LOGTO_APPLICATION_SECRET: ${{ secrets.LOGTO_APPLICATION_SECRET }}
         run: make testacc
         timeout-minutes: 10
