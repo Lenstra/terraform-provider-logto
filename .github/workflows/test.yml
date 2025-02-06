@@ -47,6 +47,7 @@ jobs:
         with:
           terraform_wrapper: false
       - run: go install github.com/hashicorp/terraform-plugin-codegen-openapi/cmd/tfplugingen-openapi@latest
+      - run: go install github.com/hashicorp/terraform-plugin-codegen-framework/cmd/tfplugingen-framework@latest
       - run: go generate ./...
       - name: git diff
         run: |
