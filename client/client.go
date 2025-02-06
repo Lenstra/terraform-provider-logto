@@ -151,7 +151,12 @@ func (c *Client) do(ctx context.Context, r *request) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	accessToken, err := c.getAccessToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 	return c.conf.HttpClient.Do(req)
 }
