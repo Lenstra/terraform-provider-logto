@@ -1,0 +1,30 @@
+provider:
+  name: logto
+
+resources:
+  application:
+    read:
+      path: /api/applications/{id}
+      method: GET
+    create:
+      path: /api/applications
+      method: POST
+    update:
+      path: /api/applications/{id}
+      method: PUT
+    delete:
+      path: /api/applications/{id}
+      method: DELETE
+    schema:
+      ignores:
+        - type
+        - oidcClientMetadata
+        - createdAt
+        - customClientMetadata
+        - customData
+        - secret
+        - isAdmin
+        - isThirdParty
+        - protectedAppMetadata
+
+datasources: []
