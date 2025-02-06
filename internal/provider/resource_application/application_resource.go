@@ -2,7 +2,6 @@ package resource_application
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Lenstra/terraform-provider-logto/client"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -39,7 +38,11 @@ func (r *applicationResource) Configure(_ context.Context, req resource.Configur
 	if req.ProviderData == nil {
 		return
 	}
-	r.client = req.ProviderData.(*client.Client)
+	client, ok := req.ProviderData.(*client.Client)
+	if !ok {
+		return
+	}
+	r.client = client
 }
 
 func (r *applicationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -60,16 +63,12 @@ func (r *applicationResource) Create(ctx context.Context, req resource.CreateReq
 		Description: plan.Description.ValueString(),
 	}
 
-	oidcClientMetadata, customClientMetadata, err := r.buildClientMetadata(ctx, plan)
-	if err != nil {
-		resp.Diagnostics.AddError("Error building metadata", err.Error())
-		return
-	}
+	oidcClientMetadata, customClientMetadata := r.buildClientMetadata(ctx, plan)
 
 	application.OidcClientMetadata = oidcClientMetadata
 	application.CustomClientMetadata = customClientMetadata
 
-	application, err = r.client.ApplicationCreate(ctx, application)
+	application, err := r.client.ApplicationCreate(ctx, application)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating application", err.Error())
 		return
@@ -136,16 +135,12 @@ func (r *applicationResource) Update(ctx context.Context, req resource.UpdateReq
 		Description: plan.Description.ValueString(),
 	}
 
-	oidcClientMetadata, customClientMetadata, err := r.buildClientMetadata(ctx, plan)
-	if err != nil {
-		resp.Diagnostics.AddError("Error building metadata", err.Error())
-		return
-	}
+	oidcClientMetadata, customClientMetadata := r.buildClientMetadata(ctx, plan)
 
 	application.OidcClientMetadata = oidcClientMetadata
 	application.CustomClientMetadata = customClientMetadata
 
-	application, err = r.client.ApplicationUpdate(ctx, application)
+	application, err := r.client.ApplicationUpdate(ctx, application)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating application", err.Error())
 		return
@@ -178,13 +173,13 @@ func (r *applicationResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 }
 
-func convertListToSlice(ctx context.Context, list types.List) ([]string, error) {
+func convertListToSlice(ctx context.Context, list types.List) []string {
 	if list.IsNull() || list.IsUnknown() {
-		return []string{}, nil
+		return []string{}
 	}
 	var result []string
 	list.ElementsAs(ctx, &result, false)
-	return result, nil
+	return result
 }
 
 func stringSliceToList(slice []string) types.List {
@@ -220,36 +215,28 @@ func updateListField(slice []string, plan *types.List) {
 	}
 }
 
-func (r *applicationResource) buildClientMetadata(ctx context.Context, plan ApplicationModel) (*client.OidcClientMetadata, *client.CustomClientMetadata, error) {
+func (r *applicationResource) buildClientMetadata(ctx context.Context, plan ApplicationModel) (*client.OidcClientMetadata, *client.CustomClientMetadata) {
 	oidcClientMetadata := &client.OidcClientMetadata{
 		RedirectUris:           []string{},
 		PostLogoutRedirectUris: []string{},
 	}
 
-	redirectUris, err := convertListToSlice(ctx, plan.RedirectUris)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to convert redirect uris: %w", err)
-	}
+	redirectUris := convertListToSlice(ctx, plan.RedirectUris)
 	oidcClientMetadata.RedirectUris = redirectUris
 
-	postLogoutRedirectUris, err := convertListToSlice(ctx, plan.PostLogoutRedirectUris)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to convert post logout redirect uris: %w", err)
-	}
+	postLogoutRedirectUris := convertListToSlice(ctx, plan.PostLogoutRedirectUris)
 	oidcClientMetadata.PostLogoutRedirectUris = postLogoutRedirectUris
 
 	var customClientMetadata *client.CustomClientMetadata
 	if !plan.CorsAllowedOrigins.IsNull() {
-		corsAllowedOrigins, err := convertListToSlice(ctx, plan.CorsAllowedOrigins)
-		if err != nil {
-			return nil, nil, fmt.Errorf("failed to convert cors allowed origins: %w", err)
-		}
+		corsAllowedOrigins := convertListToSlice(ctx, plan.CorsAllowedOrigins)
+
 		customClientMetadata = &client.CustomClientMetadata{
 			CorsAllowedOrigins: corsAllowedOrigins,
 		}
 	}
 
-	return oidcClientMetadata, customClientMetadata, nil
+	return oidcClientMetadata, customClientMetadata
 }
 
 func (r *applicationResource) getSecrets(ctx context.Context, applicationID string) (types.Map, diag.Diagnostics) {
