@@ -1,7 +1,39 @@
 {
 	"version": "0.1",
 	"provider": {
-		"name": "logto"
+		"name": "logto",
+		"schema": {
+			"attributes": [
+				{
+					"name": "hostname",
+					"string": {
+						"description": "The API hostname for your instance, can be set as environment variable LOGTO_HOSTNAME.",
+						"optional_required": "optional"
+					}
+				},
+				{
+					"name": "resource",
+					"string": {
+						"description": "The application resource for your instance, can be set as environment variable LOGTO_RESOURCE. This is only needed when connecting to an on-premise Logto instance.",
+						"optional_required": "optional"
+					}
+				},
+				{
+					"name": "application_id",
+					"string": {
+						"description": "The application id for your instance, can be set as environment variable LOGTO_APPLICATION_ID.",
+						"optional_required": "optional"
+					}
+				},
+				{
+					"name": "application_secret",
+					"string": {
+						"description": "The application secret for your instance, can be set as environment variable LOGTO_APPLICATION_SECRET.",
+						"optional_required": "optional"
+					}
+				}
+			]
+		}
 	},
 	"resources": [
 		{

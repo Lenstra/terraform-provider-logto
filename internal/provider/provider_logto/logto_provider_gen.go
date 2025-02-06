@@ -4,13 +4,41 @@ package provider_logto
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 )
 
 func LogtoProviderSchema(ctx context.Context) schema.Schema {
-	return schema.Schema{}
+	return schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"application_id": schema.StringAttribute{
+				Optional:            true,
+				Description:         "The application id for your instance, can be set as environment variable LOGTO_APPLICATION_ID.",
+				MarkdownDescription: "The application id for your instance, can be set as environment variable LOGTO_APPLICATION_ID.",
+			},
+			"application_secret": schema.StringAttribute{
+				Optional:            true,
+				Description:         "The application secret for your instance, can be set as environment variable LOGTO_APPLICATION_SECRET.",
+				MarkdownDescription: "The application secret for your instance, can be set as environment variable LOGTO_APPLICATION_SECRET.",
+			},
+			"hostname": schema.StringAttribute{
+				Optional:            true,
+				Description:         "The API hostname for your instance, can be set as environment variable LOGTO_HOSTNAME.",
+				MarkdownDescription: "The API hostname for your instance, can be set as environment variable LOGTO_HOSTNAME.",
+			},
+			"resource": schema.StringAttribute{
+				Optional:            true,
+				Description:         "The application resource for your instance, can be set as environment variable LOGTO_RESOURCE. This is only needed when connecting to an on-premise Logto instance.",
+				MarkdownDescription: "The application resource for your instance, can be set as environment variable LOGTO_RESOURCE. This is only needed when connecting to an on-premise Logto instance.",
+			},
+		},
+	}
 }
 
 type LogtoModel struct {
+	ApplicationId     types.String `tfsdk:"application_id"`
+	ApplicationSecret types.String `tfsdk:"application_secret"`
+	Hostname          types.String `tfsdk:"hostname"`
+	Resource          types.String `tfsdk:"resource"`
 }

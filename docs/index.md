@@ -3,12 +3,12 @@
 page_title: "logto Provider"
 subcategory: ""
 description: |-
-  Logto terraform provider developed by Lenstra.
+  
 ---
 
 # logto Provider
 
-Logto terraform provider developed by Lenstra.
+
 
 ## Example Usage
 
@@ -24,5 +24,7 @@ provider "logto" {
 
 ### Optional
 
-- `access_token` (String) Access token for you instance, can be set as environment variable LOGTO_ACCESS_TOKEN
-- `tenant_id` (String) API tenant_id for you instance, can be set as environment variable LOGTO_TENANT_ID
+- `application_id` (String) The application id for your instance, can be set as environment variable LOGTO_APPLICATION_ID.
+- `application_secret` (String) The application secret for your instance, can be set as environment variable LOGTO_APPLICATION_SECRET.
+- `hostname` (String) The API hostname for your instance, can be set as environment variable LOGTO_HOSTNAME.
+- `resource` (String) The application resource for your instance, can be set as environment variable LOGTO_RESOURCE. This is only needed when connecting to an on-premise Logto instance.

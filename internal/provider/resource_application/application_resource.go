@@ -55,15 +55,12 @@ func (r *applicationResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	application := &client.ApplicationModel{
-		Name: plan.Name.ValueString(),
-		Type: plan.Type.ValueString(),
+		Name:        plan.Name.ValueString(),
+		Type:        plan.Type.ValueString(),
+		Description: plan.Description.ValueString(),
 	}
 
-	if !plan.Description.IsNull() {
-		application.Description = plan.Description.ValueString()
-	}
-
-	oidcClientMetadata, customClientMetadata, err := r.buildClientMetadata(plan)
+	oidcClientMetadata, customClientMetadata, err := r.buildClientMetadata(ctx, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Error building metadata", err.Error())
 		return
@@ -133,16 +130,13 @@ func (r *applicationResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	application := &client.ApplicationModel{
-		ID:   state.Id.ValueString(),
-		Name: plan.Name.ValueString(),
-		Type: state.Type.ValueString(),
+		ID:          state.Id.ValueString(),
+		Name:        plan.Name.ValueString(),
+		Type:        state.Type.ValueString(),
+		Description: plan.Description.ValueString(),
 	}
 
-	if !plan.Description.IsNull() {
-		application.Description = plan.Description.ValueString()
-	}
-
-	oidcClientMetadata, customClientMetadata, err := r.buildClientMetadata(plan)
+	oidcClientMetadata, customClientMetadata, err := r.buildClientMetadata(ctx, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Error building metadata", err.Error())
 		return
@@ -184,12 +178,12 @@ func (r *applicationResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 }
 
-func convertListToSlice(list types.List) ([]string, error) {
+func convertListToSlice(ctx context.Context, list types.List) ([]string, error) {
 	if list.IsNull() || list.IsUnknown() {
-		return nil, nil
+		return []string{}, nil
 	}
 	var result []string
-	list.ElementsAs(context.Background(), &result, false)
+	list.ElementsAs(ctx, &result, false)
 	return result, nil
 }
 
@@ -226,31 +220,27 @@ func updateListField(slice []string, plan *types.List) {
 	}
 }
 
-func (r *applicationResource) buildClientMetadata(plan ApplicationModel) (*client.OidcClientMetadata, *client.CustomClientMetadata, error) {
+func (r *applicationResource) buildClientMetadata(ctx context.Context, plan ApplicationModel) (*client.OidcClientMetadata, *client.CustomClientMetadata, error) {
 	oidcClientMetadata := &client.OidcClientMetadata{
 		RedirectUris:           []string{},
 		PostLogoutRedirectUris: []string{},
 	}
 
-	if !plan.RedirectUris.IsNull() {
-		redirectUris, err := convertListToSlice(plan.RedirectUris)
-		if err != nil {
-			return nil, nil, fmt.Errorf("failed to convert redirect uris: %w", err)
-		}
-		oidcClientMetadata.RedirectUris = redirectUris
+	redirectUris, err := convertListToSlice(ctx, plan.RedirectUris)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to convert redirect uris: %w", err)
 	}
+	oidcClientMetadata.RedirectUris = redirectUris
 
-	if !plan.PostLogoutRedirectUris.IsNull() {
-		postLogoutRedirectUris, err := convertListToSlice(plan.PostLogoutRedirectUris)
-		if err != nil {
-			return nil, nil, fmt.Errorf("failed to convert post logout redirect uris: %w", err)
-		}
-		oidcClientMetadata.PostLogoutRedirectUris = postLogoutRedirectUris
+	postLogoutRedirectUris, err := convertListToSlice(ctx, plan.PostLogoutRedirectUris)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to convert post logout redirect uris: %w", err)
 	}
+	oidcClientMetadata.PostLogoutRedirectUris = postLogoutRedirectUris
 
 	var customClientMetadata *client.CustomClientMetadata
 	if !plan.CorsAllowedOrigins.IsNull() {
-		corsAllowedOrigins, err := convertListToSlice(plan.CorsAllowedOrigins)
+		corsAllowedOrigins, err := convertListToSlice(ctx, plan.CorsAllowedOrigins)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to convert cors allowed origins: %w", err)
 		}

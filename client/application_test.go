@@ -10,7 +10,8 @@ import (
 func TestApplication(t *testing.T) {
 	ctx := context.Background()
 	config := DefaultConfig()
-	client := NewClient(config)
+	client, err := NewClient(config)
+	require.NoError(t, err)
 
 	app, err := client.ApplicationGet(ctx, "not-found")
 	require.NoError(t, err)

@@ -74,6 +74,9 @@ func Main() error {
 		return err
 	}
 
+	// use the provider given in our extra conf
+	spec.Provider = extra.Provider
+
 	resources := map[string]*Resource{}
 	for _, r := range extra.Resources {
 		resources[r.Name] = r

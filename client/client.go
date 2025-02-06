@@ -7,21 +7,32 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"slices"
+	"strings"
 	"time"
 )
 
+const (
+	tokenType = "Bearer"
+)
+
 type Config struct {
-	TenantID    string
-	AccessToken string
-	HttpClient  *http.Client
+	Hostname          string
+	Resource          string
+	ApplicationID     string
+	ApplicationSecret string
+	HttpClient        *http.Client
 }
 
 func DefaultConfig() *Config {
+
 	return &Config{
-		TenantID:    os.Getenv("LOGTO_TENANT_ID"),
-		AccessToken: os.Getenv("LOGTO_ACCESS_TOKEN"),
+		Hostname:          os.Getenv("LOGTO_HOSTNAME"),
+		Resource:          os.Getenv("LOGTO_RESOURCE"),
+		ApplicationID:     os.Getenv("LOGTO_APPLICATION_ID"),
+		ApplicationSecret: os.Getenv("LOGTO_APPLICATION_SECRET"),
 		HttpClient: &http.Client{
 			Timeout: 60 * time.Second,
 		},
@@ -32,21 +43,36 @@ type Client struct {
 	conf *Config
 }
 
-func NewClient(config *Config) *Client {
+func NewClient(config *Config) (*Client, error) {
 	defConfig := DefaultConfig()
-	if config.TenantID == "" {
-		config.TenantID = defConfig.TenantID
+	if config.Hostname == "" {
+		config.Hostname = defConfig.Hostname
 	}
-	if config.AccessToken == "" {
-		config.AccessToken = defConfig.AccessToken
+	switch {
+	case config.Resource != "":
+		break
+	case defConfig.Resource != "":
+		config.Resource = defConfig.Resource
+	default:
+		config.Resource = fmt.Sprintf("https://%s/api", config.Hostname)
+	}
+	if config.ApplicationID == "" {
+		config.ApplicationID = defConfig.ApplicationID
+	}
+	if config.ApplicationSecret == "" {
+		config.ApplicationSecret = defConfig.ApplicationSecret
 	}
 	if config.HttpClient == nil {
 		config.HttpClient = defConfig.HttpClient
 	}
 
+	if config.Hostname == "" {
+		return nil, fmt.Errorf("Missing Logto hostname")
+	}
+
 	return &Client{
 		conf: config,
-	}
+	}, nil
 }
 
 type request struct {
@@ -56,12 +82,11 @@ type request struct {
 }
 
 func (r *request) toHttpRequest(ctx context.Context, conf *Config) (*http.Request, error) {
-	url := fmt.Sprintf("https://%s.logto.app/%s", conf.TenantID, r.path)
+	url := fmt.Sprintf("https://%s/%s", conf.Hostname, r.path)
 	req, err := http.NewRequestWithContext(ctx, r.method, url, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", conf.AccessToken))
 
 	if r.body != nil {
 		body, err := json.Marshal(r.body)
@@ -76,11 +101,58 @@ func (r *request) toHttpRequest(ctx context.Context, conf *Config) (*http.Reques
 	return req, nil
 }
 
+func (c *Client) getAccessToken(ctx context.Context) (string, error) {
+	data := url.Values{}
+	data.Set("grant_type", "client_credentials")
+	data.Set("resource", fmt.Sprintf("https://%s/api", c.conf.Hostname))
+	data.Set("scope", "all")
+	data.Encode()
+
+	req, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("https://%s/oidc/token", c.conf.Hostname),
+		strings.NewReader(data.Encode()),
+	)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.SetBasicAuth(c.conf.ApplicationID, c.conf.ApplicationSecret)
+
+	resp, err := expect(200)(c.conf.HttpClient.Do(req))
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	type Response struct {
+		AccessToken string `json:"access_token"`
+		ExpiresIn   int    `json:"expires_in"`
+		TokenType   string `json:"token_type"`
+		Scope       string `json:"scope"`
+	}
+
+	var decodedResponse Response
+	dec := json.NewDecoder(resp.Body)
+	if err := dec.Decode(&decodedResponse); err != nil {
+		return "", fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	if decodedResponse.TokenType != tokenType {
+		return "", fmt.Errorf("unexpected token type %q, expected %q", decodedResponse.TokenType, tokenType)
+	}
+
+	return decodedResponse.AccessToken, nil
+}
+
 func (c *Client) do(ctx context.Context, r *request) (*http.Response, error) {
 	req, err := r.toHttpRequest(ctx, c.conf)
 	if err != nil {
 		return nil, err
 	}
+	accessToken, err := c.getAccessToken(ctx)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 	return c.conf.HttpClient.Do(req)
 }
 

@@ -44,9 +44,9 @@ func TestAccApplicationResourceWithoutTypeUpdate(t *testing.T) {
 			{
 				Config: ProviderConfig + `
 							resource "logto_application" "test_app" {
-									name 				= "test modified"
+									name        = "test modified"
 									description = "test app modified"
-									type 				= "MachineToMachine"
+									type        = "MachineToMachine"
 							}
 							`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -73,9 +73,9 @@ func TestAccApplicationResourceWithTypeUpdate(t *testing.T) {
 			{
 				Config: ProviderConfig + `
 							resource "logto_application" "test_app" {
-									name 				= "test"
+									name        = "test"
 									description = "test app"
-									type				= "MachineToMachine"
+									type        = "MachineToMachine"
 							}
 							`,
 				Check: resource.ComposeAggregateTestCheckFunc(

@@ -16,7 +16,10 @@ import (
 
 // If you do not have terraform installed, you can remove the formatting command, but its suggested to
 // ensure the documentation is formatted properly.
-//go:generate terraform fmt -recursive ./examples/
+//go:generate terraform fmt -recursive .
+
+// Update the Provider schema.
+//go:generate go run ./scripts/terraform-generator.go
 
 // Run the docs generation tool, check its repository for more information on how it works and how docs
 // can be customized.
