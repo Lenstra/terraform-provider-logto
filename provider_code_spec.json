@@ -146,5 +146,81 @@
 				]
 			}
 		}
+	],
+	"datasources": [
+		{
+			"name": "application",
+			"schema": {
+				"attributes": [
+					{
+						"name": "id",
+						"string": {
+							"computed_optional_required": "required",
+							"description": "The unique identifier of the application."
+						}
+					},
+					{
+						"name": "description",
+						"string": {
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "name",
+						"string": {
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "tenant_id",
+						"string": {
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "type",
+						"string": {
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"map": {
+							"computed_optional_required": "computed",
+							"element_type": {
+								"string": {}
+							}
+						},
+						"name": "secrets"
+					},
+					{
+						"list": {
+							"computed_optional_required": "optional",
+							"element_type": {
+								"string": {}
+							}
+						},
+						"name": "redirect_uris"
+					},
+					{
+						"list": {
+							"computed_optional_required": "optional",
+							"element_type": {
+								"string": {}
+							}
+						},
+						"name": "post_logout_redirect_uris"
+					},
+					{
+						"list": {
+							"computed_optional_required": "optional",
+							"element_type": {
+								"string": {}
+							}
+						},
+						"name": "cors_allowed_origins"
+					}
+				]
+			}
+		}
 	]
 }
