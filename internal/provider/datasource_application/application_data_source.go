@@ -1,105 +1,84 @@
-// Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
-
 package datasource_application
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 
+	"github.com/Lenstra/terraform-provider-logto/client"
+	"github.com/Lenstra/terraform-provider-logto/internal/provider/utils"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
-var _ datasource.DataSource = &ApplicationDataSource{}
+var _ datasource.DataSource = &applicationDataSource{}
 
-func NewApplicationDataSource() datasource.DataSource {
-	return &ApplicationDataSource{}
+type applicationDataSource struct {
+	client *client.Client
 }
 
-// ApplicationDataSource defines the data source implementation.
-type ApplicationDataSource struct {
-	client *http.Client
+func ApplicationDataSource() datasource.DataSource {
+	return &applicationDataSource{}
 }
 
-// ApplicationDataSourceModel describes the data source data model.
-type ApplicationDataSourceModel struct {
-	ConfigurableAttribute types.String `tfsdk:"configurable_attribute"`
-	Id                    types.String `tfsdk:"id"`
+func (d *applicationDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_application"
 }
 
-func (d *ApplicationDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_example"
+func (d *applicationDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = ApplicationDataSourceSchema(ctx)
 }
 
-func (d *ApplicationDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
-		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Example data source",
-
-		Attributes: map[string]schema.Attribute{
-			"configurable_attribute": schema.StringAttribute{
-				MarkdownDescription: "Example configurable attribute",
-				Optional:            true,
-			},
-			"id": schema.StringAttribute{
-				MarkdownDescription: "Example identifier",
-				Computed:            true,
-			},
-		},
-	}
-}
-
-func (d *ApplicationDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	// Prevent panic if the provider has not been configured.
+func (d *applicationDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
-
-	client, ok := req.ProviderData.(*http.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *http.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
+	if client, ok := req.ProviderData.(*client.Client); ok {
+		d.client = client
 	}
-
-	d.client = client
 }
 
-func (d *ApplicationDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data ApplicationDataSourceModel
-
-	// Read Terraform configuration data into the model
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
-
+func (d *applicationDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var state ApplicationModel
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	application, err := d.client.ApplicationGet(ctx, state.Id.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Error reading application", err.Error())
+		return
+	}
+	secretsValue, diags := utils.GetSecrets(ctx, d.client, application.ID)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	state.Secrets = secretsValue
+	state.Id = types.StringValue(application.ID)
+	state.TenantId = types.StringValue(application.TenantId)
+	state.Name = types.StringValue(application.Name)
+	state.Description = types.StringValue(application.Description)
+	state.Type = types.StringValue(application.Type)
+	if application.OidcClientMetadata != nil {
+		if len(application.OidcClientMetadata.RedirectUris) == 0 {
+			state.RedirectUris = types.ListNull(types.StringType)
+		} else {
+			state.RedirectUris = utils.StringSliceToList(application.OidcClientMetadata.RedirectUris)
+		}
 
-	// If applicable, this is a great opportunity to initialize any necessary
-	// provider client data and make a call using it.
-	// httpResp, err := d.client.Do(httpReq)
-	// if err != nil {
-	//     resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read example, got error: %s", err))
-	//     return
-	// }
-
-	// For the purposes of this example code, hardcoding a response value to
-	// save into the Terraform state.
-	data.Id = types.StringValue("example-id")
-
-	// Write logs using the tflog package
-	// Documentation: https://terraform.io/plugin/log
-	tflog.Trace(ctx, "read a data source")
-
-	// Save data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		if len(application.OidcClientMetadata.PostLogoutRedirectUris) == 0 {
+			state.PostLogoutRedirectUris = types.ListNull(types.StringType)
+		} else {
+			state.PostLogoutRedirectUris = utils.StringSliceToList(application.OidcClientMetadata.PostLogoutRedirectUris)
+		}
+	}
+	if application.CustomClientMetadata != nil {
+		if len(application.CustomClientMetadata.CorsAllowedOrigins) == 0 {
+			state.CorsAllowedOrigins = types.ListNull(types.StringType)
+		} else {
+			state.CorsAllowedOrigins = utils.StringSliceToList(application.CustomClientMetadata.CorsAllowedOrigins)
+		}
+	}
+	diags = resp.State.Set(ctx, state)
+	resp.Diagnostics.Append(diags...)
 }

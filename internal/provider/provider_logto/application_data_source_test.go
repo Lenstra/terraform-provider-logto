@@ -7,9 +7,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
-	"github.com/hashicorp/terraform-plugin-testing/statecheck"
-	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
 func TestAccApplicationDataSource(t *testing.T) {
@@ -17,23 +14,31 @@ func TestAccApplicationDataSource(t *testing.T) {
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Read testing
 			{
-				Config: testAccApplicationDataSourceConfig,
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(
-						"data.scaffolding_application.test",
-						tfjsonpath.New("id"),
-						knownvalue.StringExact("application-id"),
-					),
-				},
+				Config: `
+							resource "logto_application" "test" {
+								name 											= "test"
+								description 							= "test app"
+								type 											= "SPA"
+								redirect_uris 						= ["http://test.test.fr", "http://test.test.com"]
+								post_logout_redirect_uris = ["http://redirect.test.fr", "http://redirect.test.com"]
+							}
+
+							data "logto_application" "test" {
+								id = logto_application.test.id
+							}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.logto_application.test", "name", "test"),
+					resource.TestCheckResourceAttr("data.logto_application.test", "description", "test app"),
+					resource.TestCheckResourceAttr("data.logto_application.test", "type", "SPA"),
+					resource.TestCheckResourceAttr("data.logto_application.test", "redirect_uris.#", "2"),
+					resource.TestCheckResourceAttr("data.logto_application.test", "redirect_uris.0", "http://test.test.fr"),
+					resource.TestCheckResourceAttr("data.logto_application.test", "redirect_uris.1", "http://test.test.com"),
+					resource.TestCheckResourceAttr("data.logto_application.test", "post_logout_redirect_uris.#", "2"),
+					resource.TestCheckResourceAttr("data.logto_application.test", "post_logout_redirect_uris.0", "http://redirect.test.fr"),
+					resource.TestCheckResourceAttr("data.logto_application.test", "post_logout_redirect_uris.1", "http://redirect.test.com"),
+				),
 			},
 		},
 	})
 }
-
-const testAccApplicationDataSourceConfig = `
-data "scaffolding_Application" "test" {
-  configurable_attribute = "application"
-}
-`
