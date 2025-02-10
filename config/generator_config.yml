@@ -27,4 +27,8 @@ resources:
         - isThirdParty
         - protectedAppMetadata
 
-datasources: []
+datasources:
+ application:
+  read:
+    path: /api/applications/{id}
+    method: GET
