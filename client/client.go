@@ -115,7 +115,7 @@ func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
-	data.Set("resource", fmt.Sprintf("https://%s/api", c.conf.Hostname))
+	data.Set("resource", fmt.Sprintf("https://%s/api", c.conf.Resource))
 	data.Set("scope", "all")
 	data.Encode()
 
