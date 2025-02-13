@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/Lenstra/terraform-provider-logto/internal/provider/resource_application"
+	"github.com/rs/zerolog"
 
 	"github.com/Lenstra/terraform-provider-logto/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -162,6 +163,11 @@ func (p *logtoProvider) Configure(ctx context.Context, req provider.ConfigureReq
 		ApplicationID:     applicationID,
 		ApplicationSecret: applicationSecret,
 	}
+
+	if os.Getenv("TF_PROVIDER_LOGTO_LOG") != "" {
+		conf.Logger = zerolog.New(os.Stdout)
+	}
+
 	apiClient, err := client.NewClient(conf)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to build Logto client", err.Error())
