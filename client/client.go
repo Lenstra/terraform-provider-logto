@@ -13,6 +13,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	utils "github.com/Lenstra/go-utils/http"
+	"github.com/rs/zerolog"
 )
 
 const (
@@ -24,7 +27,9 @@ type Config struct {
 	Resource          string
 	ApplicationID     string
 	ApplicationSecret string
-	HttpClient        *http.Client
+
+	Logger     zerolog.Logger
+	HttpClient *http.Client
 }
 
 func DefaultConfig() *Config {
@@ -81,9 +86,12 @@ func NewClient(config *Config) (*Client, error) {
 }
 
 type request struct {
-	method string
-	path   string
-	body   any
+	method                             string
+	path                               string
+	body                               any
+	raw_body                           io.Reader
+	headers                            map[string]string
+	application_id, application_secret string
 }
 
 func (r *request) toHttpRequest(ctx context.Context, conf *Config) (*http.Request, error) {
@@ -103,6 +111,14 @@ func (r *request) toHttpRequest(ctx context.Context, conf *Config) (*http.Reques
 		req.Header.Set("Content-Type", "application/json")
 	}
 
+	if r.raw_body != nil {
+		req.Body = io.NopCloser(r.raw_body)
+	}
+
+	for key, value := range r.headers {
+		req.Header.Set(key, value)
+	}
+
 	return req, nil
 }
 
@@ -115,23 +131,22 @@ func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
-	data.Set("resource", fmt.Sprintf("https://%s/api", c.conf.Hostname))
+	data.Set("resource", c.conf.Resource)
 	data.Set("scope", "all")
 	data.Encode()
 
-	req, err := http.NewRequestWithContext(
-		ctx,
-		"POST",
-		fmt.Sprintf("https://%s/oidc/token", c.conf.Hostname),
-		strings.NewReader(data.Encode()),
-	)
-	if err != nil {
-		return "", err
+	req := &request{
+		method:             "POST",
+		path:               "oidc/token",
+		application_id:     c.conf.ApplicationID,
+		application_secret: c.conf.ApplicationSecret,
+		raw_body:           strings.NewReader(data.Encode()),
+		headers: map[string]string{
+			"Content-Type": "application/x-www-form-urlencoded",
+		},
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.SetBasicAuth(c.conf.ApplicationID, c.conf.ApplicationSecret)
 
-	resp, err := expect(200)(c.conf.HttpClient.Do(req))
+	resp, err := expect(200)(c.do(ctx, req))
 	if err != nil {
 		return "", err
 	}
@@ -165,13 +180,32 @@ func (c *Client) do(ctx context.Context, r *request) (*http.Response, error) {
 		return nil, err
 	}
 
-	accessToken, err := c.getAccessToken(ctx)
+	if r.application_id != "" {
+		req.SetBasicAuth(r.application_id, r.application_secret)
+	} else {
+		accessToken, err := c.getAccessToken(ctx)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+	}
+
+	err = utils.LogRequest(c.conf.Logger.Trace(), req, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
-	return c.conf.HttpClient.Do(req)
+	resp, err := c.conf.HttpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	err = utils.LogResponse(c.conf.Logger.Trace(), resp, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 func decode(r io.ReadCloser, out any) error {
