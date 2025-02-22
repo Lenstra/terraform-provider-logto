@@ -350,7 +350,7 @@ func TestAccApplicationResourceWithCorsAllowedOrigins(t *testing.T) {
 					// Verify attributes
 					resource.TestCheckResourceAttr("logto_application.test_app", "name", "test"),
 					resource.TestCheckResourceAttr("logto_application.test_app", "description", "test app"),
-					resource.TestCheckResourceAttr("logto_application.test_app", "type", "SPA"),
+					resource.TestCheckResourceAttr("logto_application.test_app", "type", "Traditional"),
 					resource.TestCheckResourceAttr("logto_application.test_app", "is_admin", "false"),
 					resource.TestCheckResourceAttr("logto_application.test_app", "is_third_party", "true"),
 
