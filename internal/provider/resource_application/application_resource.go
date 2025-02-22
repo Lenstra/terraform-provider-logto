@@ -58,9 +58,10 @@ func (r *applicationResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	application := &client.ApplicationModel{
-		Name:        plan.Name.ValueString(),
-		Type:        plan.Type.ValueString(),
-		Description: plan.Description.ValueString(),
+		Name:         plan.Name.ValueString(),
+		Type:         plan.Type.ValueString(),
+		Description:  plan.Description.ValueString(),
+		IsThirdParty: plan.IsThirdParty.ValueBool(),
 	}
 
 	oidcClientMetadata, customClientMetadata := r.buildClientMetadata(ctx, plan)
@@ -129,10 +130,11 @@ func (r *applicationResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	application := &client.ApplicationModel{
-		ID:          state.Id.ValueString(),
-		Name:        plan.Name.ValueString(),
-		Type:        state.Type.ValueString(),
-		Description: plan.Description.ValueString(),
+		ID:           state.Id.ValueString(),
+		Name:         plan.Name.ValueString(),
+		Type:         state.Type.ValueString(),
+		Description:  plan.Description.ValueString(),
+		IsThirdParty: plan.IsThirdParty.ValueBool(),
 	}
 
 	oidcClientMetadata, customClientMetadata := r.buildClientMetadata(ctx, plan)
@@ -190,20 +192,22 @@ func stringSliceToList(slice []string) types.List {
 	return types.ListValueMust(types.StringType, values)
 }
 
-func (r *applicationResource) updateApplicationState(application *client.ApplicationModel, plan *ApplicationModel) {
-	plan.Id = types.StringValue(application.ID)
-	plan.TenantId = types.StringValue(application.TenantId)
-	plan.Name = types.StringValue(application.Name)
-	plan.Description = types.StringValue(application.Description)
-	plan.Type = types.StringValue(application.Type)
+func (r *applicationResource) updateApplicationState(app *client.ApplicationModel, model *ApplicationModel) {
+	model.Id = types.StringValue(app.ID)
+	model.TenantId = types.StringValue(app.TenantId)
+	model.Name = types.StringValue(app.Name)
+	model.Description = types.StringValue(app.Description)
+	model.Type = types.StringValue(app.Type)
+	model.IsThirdParty = types.BoolValue(app.IsThirdParty)
+	model.IsAdmin = types.BoolValue(app.IsAdmin)
 
-	if application.OidcClientMetadata != nil {
-		updateListField(application.OidcClientMetadata.RedirectUris, &plan.RedirectUris)
-		updateListField(application.OidcClientMetadata.PostLogoutRedirectUris, &plan.PostLogoutRedirectUris)
+	if app.OidcClientMetadata != nil {
+		updateListField(app.OidcClientMetadata.RedirectUris, &model.RedirectUris)
+		updateListField(app.OidcClientMetadata.PostLogoutRedirectUris, &model.PostLogoutRedirectUris)
 	}
 
-	if application.CustomClientMetadata != nil {
-		updateListField(application.CustomClientMetadata.CorsAllowedOrigins, &plan.CorsAllowedOrigins)
+	if app.CustomClientMetadata != nil {
+		updateListField(app.CustomClientMetadata.CorsAllowedOrigins, &model.CorsAllowedOrigins)
 	}
 }
 

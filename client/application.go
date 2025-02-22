@@ -2,11 +2,20 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 )
 
+var (
+	errEmptyID = errors.New("id should not be empty")
+)
+
 func (c *Client) ApplicationGet(ctx context.Context, id string) (*ApplicationModel, error) {
+	if id == "" {
+		return nil, errEmptyID
+	}
+
 	req := &request{
 		method: http.MethodGet,
 		path:   "api/applications/" + id,
@@ -47,6 +56,10 @@ func (c *Client) ApplicationCreate(ctx context.Context, app *ApplicationModel) (
 }
 
 func (c *Client) ApplicationDelete(ctx context.Context, id string) error {
+	if id == "" {
+		return errEmptyID
+	}
+
 	req := &request{
 		method: http.MethodDelete,
 		path:   "api/applications/" + id,
@@ -74,10 +87,14 @@ func (c *Client) ApplicationUpdate(ctx context.Context, app *ApplicationModel) (
 	return &application, nil
 }
 
-func (c *Client) GetApplicationSecrets(ctx context.Context, applicationId string) ([]Secret, error) {
+func (c *Client) GetApplicationSecrets(ctx context.Context, id string) ([]Secret, error) {
+	if id == "" {
+		return nil, errEmptyID
+	}
+
 	req := &request{
 		method: http.MethodGet,
-		path:   fmt.Sprintf("api/applications/%s/secrets", applicationId),
+		path:   fmt.Sprintf("api/applications/%s/secrets", id),
 	}
 
 	res, err := expect(200)(c.do(ctx, req))

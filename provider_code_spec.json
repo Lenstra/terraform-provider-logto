@@ -47,6 +47,12 @@
 						}
 					},
 					{
+						"bool": {
+							"computed_optional_required": "computed_optional"
+						},
+						"name": "is_third_party"
+					},
+					{
 						"name": "name",
 						"string": {
 							"computed_optional_required": "required",
@@ -76,6 +82,12 @@
 						"string": {
 							"computed_optional_required": "computed"
 						}
+					},
+					{
+						"bool": {
+							"computed_optional_required": "computed"
+						},
+						"name": "is_admin"
 					},
 					{
 						"name": "type",

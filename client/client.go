@@ -77,7 +77,7 @@ func NewClient(config *Config) (*Client, error) {
 	}
 
 	if config.Hostname == "" {
-		return nil, fmt.Errorf("Missing Logto hostname")
+		return nil, fmt.Errorf("missing Logto hostname")
 	}
 
 	return &Client{

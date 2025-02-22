@@ -39,6 +39,7 @@ type ApplicationModel struct {
 	CustomData           map[string]interface{} `json:"customData,omitempty"`
 	ProtectedAppMetadata *ProtectedAppMetadata  `json:"protectedAppMetadata,omitempty"`
 	IsAdmin              bool                   `json:"isAdmin"`
+	IsThirdParty         bool                   `json:"isThirdParty"`
 }
 
 type Secret struct {

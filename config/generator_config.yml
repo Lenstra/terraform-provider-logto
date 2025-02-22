@@ -23,8 +23,6 @@ resources:
         - customClientMetadata
         - customData
         - secret
-        - isAdmin
-        - isThirdParty
         - protectedAppMetadata
 
 datasources: []

@@ -29,6 +29,13 @@ func ApplicationResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The unique identifier of the application.",
 				MarkdownDescription: "The unique identifier of the application.",
 			},
+			"is_admin": schema.BoolAttribute{
+				Computed: true,
+			},
+			"is_third_party": schema.BoolAttribute{
+				Optional: true,
+				Computed: true,
+			},
 			"name": schema.StringAttribute{
 				Required: true,
 				Validators: []validator.String{
@@ -74,6 +81,8 @@ type ApplicationModel struct {
 	CorsAllowedOrigins     types.List   `tfsdk:"cors_allowed_origins"`
 	Description            types.String `tfsdk:"description"`
 	Id                     types.String `tfsdk:"id"`
+	IsAdmin                types.Bool   `tfsdk:"is_admin"`
+	IsThirdParty           types.Bool   `tfsdk:"is_third_party"`
 	Name                   types.String `tfsdk:"name"`
 	PostLogoutRedirectUris types.List   `tfsdk:"post_logout_redirect_uris"`
 	RedirectUris           types.List   `tfsdk:"redirect_uris"`
