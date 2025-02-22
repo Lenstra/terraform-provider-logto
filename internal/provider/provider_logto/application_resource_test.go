@@ -339,10 +339,11 @@ func TestAccApplicationResourceWithCorsAllowedOrigins(t *testing.T) {
 			{
 				Config: ProviderConfig + `
 							resource "logto_application" "test_app" {
-								name                      = "test"
-								description               = "test app"
-								type                      = "SPA"
-								cors_allowed_origins      = ["http://cors_allowed_origin_test.fr", "http://cors_allowed_origin_test.com"]
+								name                  = "test"
+								description           = "test app"
+								type                  = "Traditional"
+								cors_allowed_origins  = ["http://cors_allowed_origin_test.fr", "http://cors_allowed_origin_test.com"]
+								is_third_party        = true
 							}
 							`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -350,6 +351,8 @@ func TestAccApplicationResourceWithCorsAllowedOrigins(t *testing.T) {
 					resource.TestCheckResourceAttr("logto_application.test_app", "name", "test"),
 					resource.TestCheckResourceAttr("logto_application.test_app", "description", "test app"),
 					resource.TestCheckResourceAttr("logto_application.test_app", "type", "SPA"),
+					resource.TestCheckResourceAttr("logto_application.test_app", "is_admin", "false"),
+					resource.TestCheckResourceAttr("logto_application.test_app", "is_third_party", "true"),
 
 					resource.TestCheckResourceAttr("logto_application.test_app", "cors_allowed_origins.#", "2"),
 					resource.TestCheckResourceAttr("logto_application.test_app", "cors_allowed_origins.0", "http://cors_allowed_origin_test.fr"),
