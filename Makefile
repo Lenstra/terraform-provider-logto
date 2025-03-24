@@ -12,3 +12,11 @@ fmt:
 .PHONY: lint
 lint:
 	golangci-lint run
+
+.PHONY: install
+generate:
+	go install
+
+.PHONY: generate
+generate:
+	go generate
