@@ -42,6 +42,20 @@ type ApplicationModel struct {
 	IsThirdParty         bool                   `json:"isThirdParty"`
 }
 
+type UserModel struct {
+	ID       string   `json:"id,omitempty"`
+	Username string   `json:"username"`
+	Name     string   `json:"name"`
+	Profile  *Profile `json:"profile"`
+}
+
+type Profile struct {
+	FamilyName string `json:"familyName"`
+	GivenName  string `json:"givenName"`
+	MiddleName string `json:"middleName"`
+	Nickname   string `json:"nickname"`
+}
+
 type Secret struct {
 	TenantId      string `json:"tenantId"`
 	ApplicationId string `json:"applicationId"`
