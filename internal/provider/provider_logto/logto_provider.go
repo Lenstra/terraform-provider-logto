@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/Lenstra/terraform-provider-logto/internal/provider/resource_application"
+	"github.com/Lenstra/terraform-provider-logto/internal/provider/resource_user"
 	"github.com/rs/zerolog"
 
 	"github.com/Lenstra/terraform-provider-logto/client"
@@ -191,5 +192,6 @@ func (p *logtoProvider) DataSources(_ context.Context) []func() datasource.DataS
 func (p *logtoProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		resource_application.ApplicationResource,
+		resource_user.UserResource,
 	}
 }
