@@ -1,4 +1,3 @@
-
 resource "logto_user" "user" {
   name     = "test"
   username = "test username"
