@@ -15,8 +15,8 @@ lint:
 
 .PHONY: install
 generate:
-	go install
+	go install .
 
 .PHONY: generate
 generate:
-	go generate
+	go generate ./...

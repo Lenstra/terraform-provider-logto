@@ -24,5 +24,47 @@ resources:
         - customData
         - secret
         - protectedAppMetadata
+  user:
+    read:
+      path: /api/users/{userId}
+      method: GET
+    create:
+      path: /api/users
+      method: POST
+    update:
+      path: /api/users/{userId}
+      method: PATCH
+    delete:
+      path: /api/users/{userId}
+      method: DELETE
+    schema:
+      ignores:
+       - username
+       - primaryEmail
+       - primaryPhone
+       - avatar
+       - customData
+       - identities
+       - lastSignInAt
+       - createdAt
+       - updatedAt
+       - profile.address
+       - profile.birthdate
+       - profile.gender
+       - profile.locale
+       - profile.preferredUsername
+       - profile.profile
+       - profile.website
+       - profile.zoneinfo
+       - applicationId
+       - isSuspended
+       - hasPassword
+       - includeSsoIdentities
+       - lastSignInAt
+       - password
+       - passwordAlgorithm
+       - passwordDigest
+       - ssoIdentities
+       - userId
 
 datasources: []
