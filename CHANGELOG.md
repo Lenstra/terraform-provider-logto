@@ -1,3 +1,9 @@
+## 0.0.4
+
+FEATURES:
+
+- **New `logto_application` resource.**
+
 ## 0.0.3
 
 IMPROVEMENTS:
@@ -14,4 +20,4 @@ BUG FIXES:
 
 FEATURES:
 
-- **New `logto_application_resource`.**
+- **New `logto_application` resource.**
