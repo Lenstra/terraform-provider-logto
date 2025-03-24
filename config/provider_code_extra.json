@@ -108,6 +108,35 @@
 					}
 				]
 			}
+		},
+		{
+			"name": "user",
+			"schema": {
+				"attributes": [
+					{
+						"name": "username",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Username for the user. It should be unique across all users.",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "regexp"
+											},
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^[A-Z_a-z]\\\\w*$\"), \"\")"
+									}
+								}
+							]
+						}
+					}
+				]
+			}
 		}
 	]
 }

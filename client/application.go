@@ -2,13 +2,8 @@ package client
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
-)
-
-var (
-	errEmptyID = errors.New("id should not be empty")
 )
 
 func (c *Client) ApplicationGet(ctx context.Context, id string) (*ApplicationModel, error) {

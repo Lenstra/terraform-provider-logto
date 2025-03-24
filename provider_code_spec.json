@@ -157,6 +157,79 @@
 					}
 				]
 			}
+		},
+		{
+			"name": "user",
+			"schema": {
+				"attributes": [
+					{
+						"name": "name",
+						"string": {
+							"computed_optional_required": "computed_optional"
+						}
+					},
+					{
+						"name": "profile",
+						"single_nested": {
+							"attributes": [
+								{
+									"name": "family_name",
+									"string": {
+										"computed_optional_required": "computed_optional"
+									}
+								},
+								{
+									"name": "given_name",
+									"string": {
+										"computed_optional_required": "computed_optional"
+									}
+								},
+								{
+									"name": "middle_name",
+									"string": {
+										"computed_optional_required": "computed_optional"
+									}
+								},
+								{
+									"name": "nickname",
+									"string": {
+										"computed_optional_required": "computed_optional"
+									}
+								}
+							],
+							"computed_optional_required": "computed_optional"
+						}
+					},
+					{
+						"name": "id",
+						"string": {
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "username",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Username for the user. It should be unique across all users.",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "regexp"
+											},
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^[A-Z_a-z]\\\\w*$\"), \"\")"
+									}
+								}
+							]
+						}
+					}
+				]
+			}
 		}
 	]
 }
