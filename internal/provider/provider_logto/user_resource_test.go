@@ -34,19 +34,21 @@ func TestAccUserResource(t *testing.T) {
 			{
 				Config: ProviderConfig + `
 					resource "logto_user" "test_user" {
-							name        = "test_user_modified"
+							name              = "test_user_modified"
+							primary_email     = "test_user@test.fr"
 
 							profile = {
 								family_name = "test_family_name_modified"
-								given_name = "test_given_name_modified"
+								given_name  = "test_given_name_modified"
 								middle_name = "test_middle_name_modified"
-								nickname = "test_nickname_modified"
+								nickname    = "test_nickname_modified"
 							}
 					}
 				`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify attributes
 					resource.TestCheckResourceAttr("logto_user.test_user", "name", "test_user_modified"),
+					resource.TestCheckResourceAttr("logto_user.test_user", "primary_email", "test_user@test.fr"),
 
 					resource.TestCheckResourceAttr("logto_user.test_user", "profile.%", "4"),
 					resource.TestCheckResourceAttr("logto_user.test_user", "profile.family_name", "test_family_name_modified"),

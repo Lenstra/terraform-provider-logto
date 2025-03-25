@@ -43,17 +43,18 @@ type ApplicationModel struct {
 }
 
 type UserModel struct {
-	ID       string   `json:"id,omitempty"`
-	Username string   `json:"username"`
-	Name     string   `json:"name"`
-	Profile  *Profile `json:"profile"`
+	ID           string   `json:"id,omitempty"`
+	PrimaryEmail string   `json:"primaryEmail,omitempty"`
+	Username     string   `json:"username,omitempty"`
+	Name         string   `json:"name,omitempty"`
+	Profile      *Profile `json:"profile,omitempty"`
 }
 
 type Profile struct {
-	FamilyName string `json:"familyName"`
-	GivenName  string `json:"givenName"`
-	MiddleName string `json:"middleName"`
-	Nickname   string `json:"nickname"`
+	FamilyName string `json:"familyName,omitempty"`
+	GivenName  string `json:"givenName,omitempty"`
+	MiddleName string `json:"middleName,omitempty"`
+	Nickname   string `json:"nickname,omitempty"`
 }
 
 type Secret struct {
