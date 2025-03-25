@@ -28,6 +28,15 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 				Optional: true,
 				Computed: true,
 			},
+			"primary_email": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Primary email address for the user. It should be unique across all users.",
+				MarkdownDescription: "Primary email address for the user. It should be unique across all users.",
+				Validators: []validator.String{
+					stringvalidator.RegexMatches(regexp.MustCompile("^\\S+@\\S+\\.\\S+$"), ""),
+				},
+			},
 			"profile": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"family_name": schema.StringAttribute{
@@ -69,10 +78,11 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type UserModel struct {
-	Id       types.String `tfsdk:"id"`
-	Name     types.String `tfsdk:"name"`
-	Profile  ProfileValue `tfsdk:"profile"`
-	Username types.String `tfsdk:"username"`
+	Id           types.String `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	PrimaryEmail types.String `tfsdk:"primary_email"`
+	Profile      ProfileValue `tfsdk:"profile"`
+	Username     types.String `tfsdk:"username"`
 }
 
 var _ basetypes.ObjectTypable = ProfileType{}

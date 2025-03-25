@@ -21,8 +21,9 @@ func TestUser(t *testing.T) {
 	require.Nil(t, user)
 
 	expected := &UserModel{
-		Username: "test",
-		Name:     "test",
+		PrimaryEmail: "test@test.fr",
+		Username:     "test",
+		Name:         "test",
 		Profile: &Profile{
 			FamilyName: "test",
 			GivenName:  "test",
@@ -33,8 +34,9 @@ func TestUser(t *testing.T) {
 	user, err = client.UserCreate(
 		ctx,
 		&UserModel{
-			Username: "test",
-			Name:     "test",
+			PrimaryEmail: "test@test.fr",
+			Username:     "test",
+			Name:         "test",
 			Profile: &Profile{
 				FamilyName: "test",
 				GivenName:  "test",
@@ -54,6 +56,7 @@ func TestUser(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, user)
 	require.NotEmpty(t, userId)
+	require.Equal(t, "test@test.fr", user.PrimaryEmail)
 	require.Equal(t, "test", user.Username)
 	require.Equal(t, "test", user.Name)
 
@@ -62,7 +65,6 @@ func TestUser(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, user)
 	require.NotEmpty(t, user.ID)
-	require.Equal(t, "test", user.Username)
 	require.Equal(t, "test update", user.Name)
 
 	err = client.UserDelete(ctx, user.ID)

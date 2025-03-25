@@ -207,6 +207,28 @@
 						}
 					},
 					{
+						"name": "primary_email",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "Primary email address for the user. It should be unique across all users.",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "regexp"
+											},
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"^\\\\S+@\\\\S+\\\\.\\\\S+$\"), \"\")"
+									}
+								}
+							]
+						}
+					},
+					{
 						"name": "username",
 						"string": {
 							"computed_optional_required": "computed_optional",
