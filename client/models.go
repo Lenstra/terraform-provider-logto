@@ -63,3 +63,21 @@ type Secret struct {
 	Name          string `json:"name"`
 	Value         string `json:"value"`
 }
+
+type ApiResourceModel struct {
+	TenantId       string    `json:"tenantId,omitempty"`
+	ID             string    `json:"id,omitempty"`
+	Name           string    `json:"name"`
+	Indicator      string    `json:"indicator"`
+	AccessTokenTtl float64   `json:"accessTokenTtl,omitempty"`
+	IsDefault      bool      `json:"isDefault,omitempty"`
+	Scopes         *[]Scopes `json:"scopes,omitempy"`
+}
+
+type Scopes struct {
+	TenantId    string `json:"tenantId"`
+	Id          string `json:"id"`
+	ResourceId  string `json:"resourceId"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
