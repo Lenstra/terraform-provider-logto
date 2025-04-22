@@ -71,7 +71,7 @@ type ApiResourceModel struct {
 	Indicator      string        `json:"indicator"`
 	AccessTokenTtl float64       `json:"accessTokenTtl,omitempty"`
 	IsDefault      bool          `json:"isDefault,omitempty"`
-	Scopes         *[]ScopeModel `json:"scopes,omitempy"`
+	Scopes         *[]ScopeModel `json:"scopes,omitempty"`
 }
 
 type ScopeModel struct {

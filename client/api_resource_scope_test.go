@@ -23,6 +23,7 @@ func TestApiResourceScope(t *testing.T) {
 			Indicator: "https://indicator.test",
 		},
 	)
+	require.NoError(t, err)
 
 	expected := &ScopeModel{
 		Name:       "test_scope",
