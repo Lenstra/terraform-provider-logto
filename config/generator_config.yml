@@ -39,32 +39,86 @@ resources:
       method: DELETE
     schema:
       ignores:
-       - username
-       - primaryEmail
-       - primaryPhone
-       - avatar
-       - customData
-       - identities
-       - lastSignInAt
-       - createdAt
-       - updatedAt
-       - profile.address
-       - profile.birthdate
-       - profile.gender
-       - profile.locale
-       - profile.preferredUsername
-       - profile.profile
-       - profile.website
-       - profile.zoneinfo
-       - applicationId
-       - isSuspended
-       - hasPassword
-       - includeSsoIdentities
-       - lastSignInAt
-       - password
-       - passwordAlgorithm
-       - passwordDigest
-       - ssoIdentities
-       - userId
+        - username
+        - primaryEmail
+        - primaryPhone
+        - avatar
+        - customData
+        - identities
+        - lastSignInAt
+        - createdAt
+        - updatedAt
+        - profile.address
+        - profile.birthdate
+        - profile.gender
+        - profile.locale
+        - profile.preferredUsername
+        - profile.profile
+        - profile.website
+        - profile.zoneinfo
+        - applicationId
+        - isSuspended
+        - hasPassword
+        - includeSsoIdentities
+        - lastSignInAt
+        - password
+        - passwordAlgorithm
+        - passwordDigest
+        - ssoIdentities
+        - userId
+  api_resource:
+    read:
+      path: /api/resources/{id}
+      method: GET
+    create:
+      path: /api/resources
+      method: POST
+    update:
+      path: /api/resources/{id}
+      method: PATCH
+    delete:
+      path: /api/resources/{id}
+      method: DELETE
+    schema:
+      ignores:
+        - tenantId
+        - indicator
+  api_resource_scope:
+    read:
+      path: /api/resources/{resourceId}/scopes
+      method: GET
+    create:
+      path: /api/resources/{resourceId}/scopes
+      method: POST
+    update:
+      path: /api/resources/{resourceId}/scopes/{scopeId}
+      method: PATCH
+    delete:
+      path: /api/resources/{resourceId}/scopes/{scopeId}
+      method: DELETE
+    schema:
+      ignores:
+        - page
+        - page_size
+        - search_params
+        - resourceId
+  role:
+    read:
+      path: /api/roles/{id}
+      method: GET
+    create:
+      path: /api/roles
+      method: POST
+    update:
+      path: /api/roles/{id}
+      method: PATCH
+    delete:
+      path: /api/roles/{id}
+      method: DELETE
+    schema:
+      ignores:
+        - tenantId
+        - scopeIds
+        - type
 
 datasources: []

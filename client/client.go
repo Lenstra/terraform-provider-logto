@@ -96,12 +96,22 @@ type request struct {
 	body                               any
 	raw_body                           io.Reader
 	headers                            map[string]string
+	query_parameters                   map[string]string
 	application_id, application_secret string
 }
 
 func (r *request) toHttpRequest(ctx context.Context, conf *Config) (*http.Request, error) {
-	url := fmt.Sprintf("https://%s/%s", conf.Hostname, r.path)
-	req, err := http.NewRequestWithContext(ctx, r.method, url, nil)
+	reqUrl := fmt.Sprintf("https://%s/%s", conf.Hostname, r.path)
+
+	if r.query_parameters != nil {
+		params := url.Values{}
+		for key, value := range r.query_parameters {
+			params.Add(key, value)
+		}
+		reqUrl = reqUrl + "?" + params.Encode()
+	}
+
+	req, err := http.NewRequestWithContext(ctx, r.method, reqUrl, nil)
 	if err != nil {
 		return nil, err
 	}

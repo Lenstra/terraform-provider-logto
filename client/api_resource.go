@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"net/http"
+	"path"
 )
 
 func (c *Client) ApiResourceGet(ctx context.Context, id string) (*ApiResourceModel, error) {
@@ -12,7 +13,7 @@ func (c *Client) ApiResourceGet(ctx context.Context, id string) (*ApiResourceMod
 
 	req := &request{
 		method: http.MethodGet,
-		path:   "api/resources/" + id,
+		path:   path.Join("api/resources", id),
 	}
 	res, err := expect(200, 404)(c.do(ctx, req))
 	if err != nil {
@@ -30,11 +31,11 @@ func (c *Client) ApiResourceGet(ctx context.Context, id string) (*ApiResourceMod
 	return &apiResource, nil
 }
 
-func (c *Client) ApiResourceCreate(ctx context.Context, ApiResource *ApiResourceModel) (*ApiResourceModel, error) {
+func (c *Client) ApiResourceCreate(ctx context.Context, apiResource *ApiResourceModel) (*ApiResourceModel, error) {
 	req := &request{
 		method: http.MethodPost,
 		path:   "api/resources",
-		body:   ApiResource,
+		body:   apiResource,
 	}
 
 	res, err := expect(201)(c.do(ctx, req))
@@ -42,11 +43,11 @@ func (c *Client) ApiResourceCreate(ctx context.Context, ApiResource *ApiResource
 		return nil, err
 	}
 
-	var apiResource ApiResourceModel
-	if err := decode(res.Body, &apiResource); err != nil {
+	var returnApiResource ApiResourceModel
+	if err := decode(res.Body, &returnApiResource); err != nil {
 		return nil, err
 	}
-	return &apiResource, nil
+	return &returnApiResource, nil
 }
 
 func (c *Client) ApiResourceDelete(ctx context.Context, id string) error {
@@ -56,17 +57,17 @@ func (c *Client) ApiResourceDelete(ctx context.Context, id string) error {
 
 	req := &request{
 		method: http.MethodDelete,
-		path:   "api/resources/" + id,
+		path:   path.Join("api/resources", id),
 	}
 	_, err := expect(204)(c.do(ctx, req))
 	return err
 }
 
-func (c *Client) ApiResourceUpdate(ctx context.Context, ApiResource *ApiResourceModel) (*ApiResourceModel, error) {
+func (c *Client) ApiResourceUpdate(ctx context.Context, apiResource *ApiResourceModel) (*ApiResourceModel, error) {
 	req := &request{
 		method: http.MethodPatch,
-		path:   "api/resources/" + ApiResource.ID,
-		body:   ApiResource,
+		path:   path.Join("api/resources/", apiResource.ID),
+		body:   apiResource,
 	}
 
 	res, err := expect(200)(c.do(ctx, req))
@@ -78,5 +79,6 @@ func (c *Client) ApiResourceUpdate(ctx context.Context, ApiResource *ApiResource
 	if err := decode(res.Body, &returnApiResource); err != nil {
 		return nil, err
 	}
+
 	return &returnApiResource, nil
 }

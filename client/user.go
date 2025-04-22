@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"net/http"
+	"path"
 )
 
 func (c *Client) UserGet(ctx context.Context, id string) (*UserModel, error) {
@@ -12,7 +13,7 @@ func (c *Client) UserGet(ctx context.Context, id string) (*UserModel, error) {
 
 	req := &request{
 		method: http.MethodGet,
-		path:   "api/users/" + id,
+		path:   path.Join("api/users/", id),
 	}
 	res, err := expect(200, 404)(c.do(ctx, req))
 	if err != nil {
@@ -56,7 +57,7 @@ func (c *Client) UserDelete(ctx context.Context, id string) error {
 
 	req := &request{
 		method: http.MethodDelete,
-		path:   "api/users/" + id,
+		path:   path.Join("api/users/", id),
 	}
 	_, err := expect(204)(c.do(ctx, req))
 	return err
@@ -65,7 +66,7 @@ func (c *Client) UserDelete(ctx context.Context, id string) error {
 func (c *Client) UserUpdate(ctx context.Context, user *UserModel) (*UserModel, error) {
 	req := &request{
 		method: http.MethodPatch,
-		path:   "api/users/" + user.ID,
+		path:   path.Join("api/users/", user.ID),
 		body:   user,
 	}
 

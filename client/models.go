@@ -65,19 +65,31 @@ type Secret struct {
 }
 
 type ApiResourceModel struct {
-	TenantId       string    `json:"tenantId,omitempty"`
-	ID             string    `json:"id,omitempty"`
-	Name           string    `json:"name"`
-	Indicator      string    `json:"indicator"`
-	AccessTokenTtl float64   `json:"accessTokenTtl,omitempty"`
-	IsDefault      bool      `json:"isDefault,omitempty"`
-	Scopes         *[]Scopes `json:"scopes,omitempy"`
+	TenantId       string        `json:"tenantId,omitempty"`
+	ID             string        `json:"id,omitempty"`
+	Name           string        `json:"name"`
+	Indicator      string        `json:"indicator,omitempty"`
+	AccessTokenTtl *float64      `json:"accessTokenTtl,omitempty"`
+	IsDefault      *bool         `json:"isDefault,omitempty"`
+	Scopes         *[]ScopeModel `json:"scopes,omitempty"`
 }
 
-type Scopes struct {
-	TenantId    string `json:"tenantId"`
-	Id          string `json:"id"`
-	ResourceId  string `json:"resourceId"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+type ScopeModel struct {
+	TenantId    string           `json:"tenantId,omitempty"`
+	ID          string           `json:"id,omitempty"`
+	ResourceId  string           `json:"resourceId,omitempty"`
+	Name        string           `json:"name"`
+	Description string           `json:"description,omitempty"`
+	CreatedAt   *float64         `json:"createdAt,omitempty"`
+	Resource    ApiResourceModel `json:"resource,omitempty"`
+}
+
+type RoleModel struct {
+	TenantId    string   `json:"tenantId,omitempty"`
+	ID          string   `json:"id,omitempty"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Type        string   `json:"type,omitempty"`
+	IsDefault   bool     `json:"isDefault,omitempty"`
+	ScopeIds    []string `json:"scopeIds,omitempty"`
 }
