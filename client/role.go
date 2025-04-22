@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"net/http"
+	"path"
 )
 
 func (c *Client) RoleGet(ctx context.Context, id string) (*RoleModel, error) {
@@ -12,7 +13,7 @@ func (c *Client) RoleGet(ctx context.Context, id string) (*RoleModel, error) {
 
 	req := &request{
 		method: http.MethodGet,
-		path:   "api/roles/" + id,
+		path:   path.Join("api/roles", id),
 	}
 
 	res, err := expect(200, 404)(c.do(ctx, req))
@@ -57,7 +58,7 @@ func (c *Client) RoleDelete(ctx context.Context, id string) error {
 
 	req := &request{
 		method: http.MethodDelete,
-		path:   "api/roles/" + id,
+		path:   path.Join("api/roles", id),
 	}
 
 	_, err := expect(204)(c.do(ctx, req))
@@ -67,7 +68,7 @@ func (c *Client) RoleDelete(ctx context.Context, id string) error {
 func (c *Client) RoleUpdate(ctx context.Context, role *RoleModel) (*RoleModel, error) {
 	req := &request{
 		method: http.MethodPatch,
-		path:   "api/roles/" + role.ID,
+		path:   path.Join("api/roles", role.ID),
 		body:   role,
 	}
 

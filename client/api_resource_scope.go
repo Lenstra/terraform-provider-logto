@@ -19,7 +19,7 @@ func (c *Client) ApiResourceScopesGetWithParams(ctx context.Context, resourceId 
 
 	req := &request{
 		method:           http.MethodGet,
-		path:             path.Join("api", "resources", resourceId, "scopes"),
+		path:             path.Join("api/resources", resourceId, "scopes"),
 		query_parameters: query_parameters,
 	}
 	res, err := expect(200, 404)(c.do(ctx, req))
@@ -41,7 +41,7 @@ func (c *Client) ApiResourceScopesGetWithParams(ctx context.Context, resourceId 
 func (c *Client) ApiResourceScopeCreate(ctx context.Context, resourceId string, scope *ScopeModel) (*ScopeModel, error) {
 	req := &request{
 		method: http.MethodPost,
-		path:   "api/resources/" + resourceId + "/scopes",
+		path:   path.Join("api/resources", resourceId, "scopes"),
 		body:   scope,
 	}
 
@@ -64,7 +64,7 @@ func (c *Client) ApiResourceScopeDelete(ctx context.Context, resourceId string, 
 
 	req := &request{
 		method: http.MethodDelete,
-		path:   "/api/resources/" + resourceId + "/scopes/" + scopeId,
+		path:   path.Join("api/resources", resourceId, "scopes", scopeId),
 	}
 
 	_, err := expect(204)(c.do(ctx, req))
@@ -74,7 +74,7 @@ func (c *Client) ApiResourceScopeDelete(ctx context.Context, resourceId string, 
 func (c *Client) ApiResourceScopeUpdate(ctx context.Context, scope *ScopeModel) (*ScopeModel, error) {
 	req := &request{
 		method: http.MethodPatch,
-		path:   "/api/resources/" + scope.ResourceId + "/scopes/" + scope.ID,
+		path:   path.Join("api/resources", scope.ResourceId, "scopes", scope.ID),
 		body:   scope,
 	}
 
