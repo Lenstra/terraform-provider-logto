@@ -39,32 +39,48 @@ resources:
       method: DELETE
     schema:
       ignores:
-       - username
-       - primaryEmail
-       - primaryPhone
-       - avatar
-       - customData
-       - identities
-       - lastSignInAt
-       - createdAt
-       - updatedAt
-       - profile.address
-       - profile.birthdate
-       - profile.gender
-       - profile.locale
-       - profile.preferredUsername
-       - profile.profile
-       - profile.website
-       - profile.zoneinfo
-       - applicationId
-       - isSuspended
-       - hasPassword
-       - includeSsoIdentities
-       - lastSignInAt
-       - password
-       - passwordAlgorithm
-       - passwordDigest
-       - ssoIdentities
-       - userId
+        - username
+        - primaryEmail
+        - primaryPhone
+        - avatar
+        - customData
+        - identities
+        - lastSignInAt
+        - createdAt
+        - updatedAt
+        - profile.address
+        - profile.birthdate
+        - profile.gender
+        - profile.locale
+        - profile.preferredUsername
+        - profile.profile
+        - profile.website
+        - profile.zoneinfo
+        - applicationId
+        - isSuspended
+        - hasPassword
+        - includeSsoIdentities
+        - lastSignInAt
+        - password
+        - passwordAlgorithm
+        - passwordDigest
+        - ssoIdentities
+        - userId
+  api_resource:
+    read:
+      path: /api/resources/{id}
+      method: GET
+    create:
+      path: /api/resources
+      method: POST
+    update:
+      path: /api/resources/{id}
+      method: PATCH
+    delete:
+      path: /api/resources/{id}
+      method: DELETE
+    schema:
+      ignores:
+        - indicator
 
 datasources: []

@@ -37,6 +37,44 @@
 	},
 	"resources": [
 		{
+			"name": "api_resource",
+			"schema": {
+				"attributes": [
+					{
+						"name": "indicator",
+						"string": {
+							"computed_optional_required": "required",
+							"description": "The unique resource indicator. Should be a valid URI.",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.LengthAtLeast(1)"
+									}
+								}
+							],
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.RequiresReplace()"
+									}
+								}
+							]
+						}
+					}
+				]
+			}
+		},
+		{
 			"name": "application",
 			"schema": {
 				"attributes": [

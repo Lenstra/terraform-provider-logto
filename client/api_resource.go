@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"path"
 )
@@ -79,5 +80,7 @@ func (c *Client) ApiResourceUpdate(ctx context.Context, apiResource *ApiResource
 	if err := decode(res.Body, &returnApiResource); err != nil {
 		return nil, err
 	}
+
+	fmt.Println(returnApiResource)
 	return &returnApiResource, nil
 }

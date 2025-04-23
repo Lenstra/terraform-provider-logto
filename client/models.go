@@ -68,9 +68,9 @@ type ApiResourceModel struct {
 	TenantId       string        `json:"tenantId,omitempty"`
 	ID             string        `json:"id,omitempty"`
 	Name           string        `json:"name"`
-	Indicator      string        `json:"indicator"`
-	AccessTokenTtl float64       `json:"accessTokenTtl,omitempty"`
-	IsDefault      bool          `json:"isDefault,omitempty"`
+	Indicator      string        `json:"indicator,omitempty"`
+	AccessTokenTtl *float64      `json:"accessTokenTtl,omitempty"`
+	IsDefault      *bool         `json:"isDefault,omitempty"`
 	Scopes         *[]ScopeModel `json:"scopes,omitempty"`
 }
 
