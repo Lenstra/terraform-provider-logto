@@ -185,7 +185,7 @@ func (r *apiResourceResource) updateApiResourceState(apiResource *client.ApiReso
 			scopeObj, objDiags := types.ObjectValue(
 				ScopeAttrTypes,
 				map[string]attr.Value{
-					"created_at":  types.NumberValue(big.NewFloat(scope.CreatedAt)),
+					"created_at":  types.NumberValue(big.NewFloat(*scope.CreatedAt)),
 					"description": types.StringValue(scope.Description),
 					"name":        types.StringValue(scope.Name),
 					"id":          types.StringValue(scope.ID),

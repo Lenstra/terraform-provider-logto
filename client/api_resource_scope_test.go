@@ -26,15 +26,17 @@ func TestApiResourceScope(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := &ScopeModel{
-		Name:       "test_scope",
-		ResourceId: apiResource.ID,
+		Name:        "test_scope",
+		Description: "test_scope_description",
+		ResourceId:  apiResource.ID,
 	}
 
 	scope, err := client.ApiResourceScopeCreate(
 		ctx,
 		apiResource.ID,
 		&ScopeModel{
-			Name: "test_scope",
+			Name:        "test_scope",
+			Description: "test_scope_description",
 		},
 	)
 	require.NoError(t, err)
@@ -43,6 +45,7 @@ func TestApiResourceScope(t *testing.T) {
 
 	scope.ID = ""
 	require.Equal(t, expected.Name, scope.Name)
+	require.Equal(t, expected.Description, scope.Description)
 
 	queryParams := map[string]string{
 		"page":      "1",
@@ -55,24 +58,31 @@ func TestApiResourceScope(t *testing.T) {
 	require.NotNil(t, scopes)
 	require.NotEmpty(t, scopes)
 	require.NotNil(t, (*scopes)[0].Name)
+	require.NotNil(t, (*scopes)[0].Description)
 	require.NotEmpty(t, (*scopes)[0].Name)
+	require.NotEmpty(t, (*scopes)[0].Description)
 	require.Equal(t, "test_scope", (*scopes)[0].Name)
+	require.Equal(t, "test_scope_description", (*scopes)[0].Description)
 
 	scopes, err = client.ApiResourceScopesGetWithParams(ctx, expected.ResourceId, queryParams)
 	require.NoError(t, err)
 	require.NotNil(t, scopes)
 	require.NotEmpty(t, scopes)
 	require.NotNil(t, (*scopes)[0].Name)
-	require.NotEmpty(t, (*scopes)[0].Name)
+	require.NotNil(t, (*scopes)[0].Description)
+	require.NotEmpty(t, (*scopes)[0].Description)
 	require.Equal(t, "test_scope", (*scopes)[0].Name)
+	require.Equal(t, "test_scope_description", (*scopes)[0].Description)
 
 	scope.Name = "test_scope_update"
+	scope.Description = "test_scope_description_update"
 	scope.ID = (*scopes)[0].ID
 	scope, err = client.ApiResourceScopeUpdate(ctx, scope)
 	require.NoError(t, err)
 	require.NotNil(t, scope)
 	require.NotEmpty(t, scope.ID)
 	require.Equal(t, "test_scope_update", scope.Name)
+	require.Equal(t, "test_scope_description_update", scope.Description)
 
 	err = client.ApiResourceDelete(ctx, apiResource.ID)
 	require.NoError(t, err)

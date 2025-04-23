@@ -82,5 +82,24 @@ resources:
     schema:
       ignores:
         - indicator
+  api_resource_scope:
+    read:
+      path: /api/resources/{resourceId}/scopes
+      method: GET
+    create:
+      path: /api/resources/{resourceId}/scopes
+      method: POST
+    update:
+      path: /api/resources/{resourceId}/scopes/{scopeId}
+      method: PATCH
+    delete:
+      path: /api/resources/{resourceId}/scopes/{scopeId}
+      method: DELETE
+    schema:
+      ignores:
+        - page
+        - page_size
+        - search_params
+        - resourceId
 
 datasources: []

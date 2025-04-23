@@ -75,12 +75,12 @@ type ApiResourceModel struct {
 }
 
 type ScopeModel struct {
-	TenantId    string  `json:"tenantId,omitempty"`
-	ID          string  `json:"id,omitempty"`
-	ResourceId  string  `json:"resourceId,omitempty"`
-	Name        string  `json:"name"`
-	Description string  `json:"description,omitempty"`
-	CreatedAt   float64 `json:"createdAt,omitempty"`
+	TenantId    string   `json:"tenantId,omitempty"`
+	ID          string   `json:"id,omitempty"`
+	ResourceId  string   `json:"resourceId,omitempty"`
+	Name        string   `json:"name"`
+	Description string   `json:"description,omitempty"`
+	CreatedAt   *float64 `json:"createdAt,omitempty"`
 }
 
 type RoleModel struct {
