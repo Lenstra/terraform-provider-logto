@@ -92,3 +92,13 @@ type RoleModel struct {
 	IsDefault   bool     `json:"isDefault,omitempty"`
 	ScopeIds    []string `json:"scopeIds,omitempty"`
 }
+
+type RoleScopeModel struct {
+	TenantId    string           `json:"tenantId,omitempty"`
+	ID          string           `json:"id"`
+	ResourceId  string           `json:"resourceId,omitempty"`
+	Name        string           `json:"name,omitempty"`
+	Description string           `json:"description,omitempty"`
+	CreatedAt   *float64         `json:"createdAt,omitempty"`
+	Resource    ApiResourceModel `json:"resource,omitempty"`
+}

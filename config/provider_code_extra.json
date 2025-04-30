@@ -174,6 +174,66 @@
 			}
 		},
 		{
+			"name": "role",
+			"schema": {
+				"attributes": [
+					{
+						"list": {
+							"computed_optional_required": "optional",
+							"description": "The initial API resource scopes assigned to the role.",
+							"element_type": {
+								"string": {}
+							},
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+											}
+										],
+										"schema_definition": "listplanmodifier.RequiresReplace()"
+									}
+								}
+							]
+						},
+						"name": "scope_ids"
+					},
+					{
+						"name": "type",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "The type of the role. It cannot be changed after creation.",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.OneOf(\n\"User\",\n\"MachineToMachine\",\n)"
+									}
+								}
+							],
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.RequiresReplace()"
+									}
+								}
+							]
+						}
+					}
+				]
+			}
+		},
+		{
 			"name": "user",
 			"schema": {
 				"attributes": [

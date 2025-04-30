@@ -32,6 +32,28 @@ func (c *Client) RoleGet(ctx context.Context, id string) (*RoleModel, error) {
 	return &role, nil
 }
 
+func (c *Client) RoleScopesGet(ctx context.Context, roleId string) ([]RoleScopeModel, error) {
+	req := &request{
+		method: http.MethodGet,
+		path:   path.Join("api/roles", roleId, "scopes"),
+	}
+
+	res, err := expect(200, 404)(c.do(ctx, req))
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode == 404 {
+		return nil, nil
+	}
+
+	var roleScopes []RoleScopeModel
+	if err := decode(res.Body, &roleScopes); err != nil {
+		return nil, err
+	}
+	return roleScopes, nil
+}
+
 func (c *Client) RoleCreate(ctx context.Context, role *RoleModel) (*RoleModel, error) {
 	req := &request{
 		method: http.MethodPost,

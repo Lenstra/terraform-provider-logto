@@ -54,6 +54,7 @@ func (c *Client) ApiResourceScopeCreate(ctx context.Context, resourceId string, 
 	if err := decode(res.Body, &returnScope); err != nil {
 		return nil, err
 	}
+
 	return &returnScope, nil
 }
 

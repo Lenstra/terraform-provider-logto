@@ -101,5 +101,23 @@ resources:
         - page_size
         - search_params
         - resourceId
+  role:
+    read:
+      path: /api/roles/{id}
+      method: GET
+    create:
+      path: /api/roles
+      method: POST
+    update:
+      path: /api/roles/{id}
+      method: PATCH
+    delete:
+      path: /api/roles/{id}
+      method: DELETE
+    schema:
+      ignores:
+        - tenantId
+        - scopeIds
+        - type
 
 datasources: []
