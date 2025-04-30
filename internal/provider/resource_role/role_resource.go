@@ -5,7 +5,6 @@ import (
 
 	"github.com/Lenstra/terraform-provider-logto/client"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -85,11 +84,7 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	diags = r.updateRoleState(role, &plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	r.updateRoleState(role, &plan)
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -115,7 +110,7 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	if roleScopes == nil || len(roleScopes) == 0 {
+	if len(roleScopes) == 0 {
 		state.ScopeIds = types.ListNull(types.StringType)
 	} else {
 		scopeIds := make([]string, 0, len(roleScopes))
@@ -125,11 +120,7 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		state.ScopeIds = stringSliceToList(scopeIds)
 	}
 
-	diags = r.updateRoleState(role, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	r.updateRoleState(role, &state)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -169,11 +160,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	diags = r.updateRoleState(role, &plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	r.updateRoleState(role, &plan)
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -201,9 +188,7 @@ func stringSliceToList(slice []string) types.List {
 	return types.ListValueMust(types.StringType, values)
 }
 
-func (r *roleResource) updateRoleState(role *client.RoleModel, model *RoleModel) diag.Diagnostics {
-	var diags diag.Diagnostics
-
+func (r *roleResource) updateRoleState(role *client.RoleModel, model *RoleModel) {
 	model.Id = types.StringValue(role.ID)
 	model.Name = types.StringValue(role.Name)
 	model.Description = types.StringValue(role.Description)
@@ -219,6 +204,4 @@ func (r *roleResource) updateRoleState(role *client.RoleModel, model *RoleModel)
 	} else {
 		model.IsDefault = types.BoolNull()
 	}
-
-	return diags
 }
