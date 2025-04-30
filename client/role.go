@@ -32,7 +32,7 @@ func (c *Client) RoleGet(ctx context.Context, id string) (*RoleModel, error) {
 	return &role, nil
 }
 
-func (c *Client) RoleScopesGet(ctx context.Context, roleId string) ([]RoleScopeModel, error) {
+func (c *Client) RoleScopesGet(ctx context.Context, roleId string) ([]ScopeModel, error) {
 	req := &request{
 		method: http.MethodGet,
 		path:   path.Join("api/roles", roleId, "scopes"),
@@ -47,7 +47,7 @@ func (c *Client) RoleScopesGet(ctx context.Context, roleId string) ([]RoleScopeM
 		return nil, nil
 	}
 
-	var roleScopes []RoleScopeModel
+	var roleScopes []ScopeModel
 	if err := decode(res.Body, &roleScopes); err != nil {
 		return nil, err
 	}
