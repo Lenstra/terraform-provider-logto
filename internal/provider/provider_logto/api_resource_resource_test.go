@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-// FIXME: This doesn't works for now because we don't know how the tenant_id is used by Logto. I posted a question on discord. I'm waiting an answere.
 func TestAccApiResourceResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -15,7 +14,6 @@ func TestAccApiResourceResource(t *testing.T) {
 			{
 				Config: ProviderConfig + `
 							resource "logto_api_resource" "test_api_resource" {
-									tenant_id        = "7rx5ya"
 									name 				     = "tf_test_api_resource"
 									indicator        = "https://test-api-resource.test"
 									access_token_ttl = 3600
@@ -23,7 +21,6 @@ func TestAccApiResourceResource(t *testing.T) {
 							`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify attributes
-					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "tenant_id", "7rx5ya"),
 					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "name", "tf_test_api_resource"),
 					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "indicator", "https://test-api-resource.test"),
 					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "access_token_ttl", "3600"),
@@ -42,7 +39,6 @@ func TestAccApiResourceResource(t *testing.T) {
 			{
 				Config: ProviderConfig + `
 							resource "logto_api_resource" "test_api_resource" {
-							    tenant_id        = "8rx5ya"
 									name             = "tf_test_api_resource modified"
 									indicator        = "https://test-api-resource-modified.test"
 									access_token_ttl = 4000
@@ -50,7 +46,6 @@ func TestAccApiResourceResource(t *testing.T) {
 							`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify attributes
-					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "tenant_id", "8rx5ya"),
 					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "name", "tf_test_api_resource modified"),
 					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "indicator", "https://test-api-resource-modified.test"),
 					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "access_token_ttl", "4000"),

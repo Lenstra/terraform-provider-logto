@@ -64,10 +64,6 @@ func (r *apiResourceResource) Create(ctx context.Context, req resource.CreateReq
 		Indicator: plan.Indicator.ValueString(),
 	}
 
-	if !plan.TenantId.IsUnknown() && !plan.TenantId.IsNull() {
-		apiResource.TenantId = plan.TenantId.ValueString()
-	}
-
 	if !plan.AccessTokenTtl.IsUnknown() && !plan.AccessTokenTtl.IsNull() {
 		accessTokenTtlValue, _ := plan.AccessTokenTtl.ValueBigFloat().Float64()
 		apiResource.AccessTokenTtl = &accessTokenTtlValue
@@ -122,9 +118,8 @@ func (r *apiResourceResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	apiResource := &client.ApiResourceModel{
-		ID:       plan.Id.ValueString(),
-		Name:     plan.Name.ValueString(),
-		TenantId: plan.TenantId.ValueString(),
+		ID:   plan.Id.ValueString(),
+		Name: plan.Name.ValueString(),
 	}
 
 	if !plan.AccessTokenTtl.IsUnknown() && !plan.AccessTokenTtl.IsNull() {
@@ -209,7 +204,6 @@ func (r *apiResourceResource) updateApiResourceState(apiResource *client.ApiReso
 	model.IsDefault = types.BoolValue(*apiResource.IsDefault)
 	model.Name = types.StringValue(apiResource.Name)
 	model.Scopes = scopesListValue
-	model.TenantId = types.StringValue(apiResource.TenantId)
 
 	return diags
 }

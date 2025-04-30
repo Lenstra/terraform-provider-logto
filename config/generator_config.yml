@@ -81,6 +81,7 @@ resources:
       method: DELETE
     schema:
       ignores:
+        - tenantId
         - indicator
   api_resource_scope:
     read:

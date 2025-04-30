@@ -85,13 +85,6 @@ func ApiResourceResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Computed: true,
 			},
-			"tenant_id": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
-				Validators: []validator.String{
-					stringvalidator.LengthAtMost(21),
-				},
-			},
 		},
 	}
 }
@@ -103,7 +96,6 @@ type ApiResourceModel struct {
 	IsDefault      types.Bool   `tfsdk:"is_default"`
 	Name           types.String `tfsdk:"name"`
 	Scopes         types.List   `tfsdk:"scopes"`
-	TenantId       types.String `tfsdk:"tenant_id"`
 }
 
 var _ basetypes.ObjectTypable = ScopesType{}
