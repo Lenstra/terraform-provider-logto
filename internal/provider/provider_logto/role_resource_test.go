@@ -67,7 +67,6 @@ func TestAccRoleRessourceRecreation(t *testing.T) {
 			{
 				Config: ProviderConfig + `
 							resource "logto_api_resource" "api_resource" {
-									tenant_id        = "7rx5ya"
 									name 				     = "tf_api_resource"
 									indicator        = "https://api-resource.test"
 									access_token_ttl = 3600
