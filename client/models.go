@@ -63,3 +63,17 @@ type Secret struct {
 	Name          string `json:"name"`
 	Value         string `json:"value"`
 }
+
+type RoleIds struct {
+	RoleIds []string `json:"roleIds,omitempty"`
+}
+
+type RoleModel struct {
+	TenantId    string   `json:"tenantId,omitempty"`
+	ID          string   `json:"id,omitempty"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Type        string   `json:"type,omitempty"`
+	IsDefault   bool     `json:"isDefault,omitempty"`
+	ScopeIds    []string `json:"scopeIds,omitempty"`
+}

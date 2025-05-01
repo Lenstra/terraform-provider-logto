@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"net/http"
+	"path"
 )
 
 func (c *Client) UserGet(ctx context.Context, id string) (*UserModel, error) {
@@ -12,7 +13,7 @@ func (c *Client) UserGet(ctx context.Context, id string) (*UserModel, error) {
 
 	req := &request{
 		method: http.MethodGet,
-		path:   "api/users/" + id,
+		path:   path.Join("api/users/", id),
 	}
 	res, err := expect(200, 404)(c.do(ctx, req))
 	if err != nil {
@@ -56,7 +57,7 @@ func (c *Client) UserDelete(ctx context.Context, id string) error {
 
 	req := &request{
 		method: http.MethodDelete,
-		path:   "api/users/" + id,
+		path:   path.Join("api/users/", id),
 	}
 	_, err := expect(204)(c.do(ctx, req))
 	return err
@@ -65,7 +66,7 @@ func (c *Client) UserDelete(ctx context.Context, id string) error {
 func (c *Client) UserUpdate(ctx context.Context, user *UserModel) (*UserModel, error) {
 	req := &request{
 		method: http.MethodPatch,
-		path:   "api/users/" + user.ID,
+		path:   path.Join("api/users/", user.ID),
 		body:   user,
 	}
 
@@ -79,4 +80,37 @@ func (c *Client) UserUpdate(ctx context.Context, user *UserModel) (*UserModel, e
 		return nil, err
 	}
 	return &returnUser, nil
+}
+
+func (c *Client) UserAssignRole(ctx context.Context, userId string, roleIds *RoleIds) error {
+	req := &request{
+		method: http.MethodPost,
+		path:   path.Join("/api/users", userId, "/roles"),
+		body:   roleIds,
+	}
+
+	_, err := expect(201)(c.do(ctx, req))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) UserGetRoles(ctx context.Context, userId string) (*[]RoleModel, error) {
+	req := &request{
+		method: http.MethodPost,
+		path:   path.Join("/api/users", userId, "/roles"),
+	}
+
+	res, err := expect(200)(c.do(ctx, req))
+	if err != nil {
+		return nil, err
+	}
+
+	var roles []RoleModel
+	if err := decode(res.Body, &roles); err != nil {
+		return nil, err
+	}
+	return &roles, nil
 }

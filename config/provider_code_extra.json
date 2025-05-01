@@ -156,6 +156,16 @@
 								}
 							]
 						}
+					},
+					{
+						"name": "role_ids",
+						"list": {
+							"element_type": {
+								"string": {}
+							},
+							"computed_optional_required": "optional",
+							"description": "Roles id's list attributed to user."
+						}
 					}
 				]
 			}

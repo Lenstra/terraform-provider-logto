@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Lenstra/terraform-provider-logto/client"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -104,6 +105,15 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
+	if !plan.RoleIds.IsNull() && !plan.RoleIds.IsUnknown() {
+		var roleIds = &client.RoleIds{}
+		diags := plan.RoleIds.ElementsAs(ctx, &roleIds, false)
+		resp.Diagnostics.Append(diags...)
+		if !resp.Diagnostics.HasError() {
+			err = r.client.UserAssignRole(ctx, user.ID, roleIds)
+		}
+	}
+
 	state := UserModel{
 		Id:           types.StringValue(user.ID),
 		Name:         types.StringValue(user.Name),
@@ -133,6 +143,22 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading user", err.Error())
 		return
+	}
+
+	roles, err := r.client.UserGetRoles(ctx, user.ID)
+	if err != nil {
+		resp.Diagnostics.AddError("Error reading user roles", err.Error())
+		return
+	}
+
+	if len(*roles) == 0 {
+		state.RoleIds = types.ListNull(types.StringType)
+	} else {
+		roleIds := make([]string, 0, len(*roles))
+		for _, role := range *roles {
+			roleIds = append(roleIds, role.ID)
+		}
+		state.RoleIds = stringSliceToList(roleIds)
 	}
 
 	r.updateUserState(user, &state)
@@ -214,4 +240,12 @@ func (r *userResource) updateUserState(user *client.UserModel, model *UserModel)
 			model.Profile.Nickname = types.StringValue(user.Profile.Nickname)
 		}
 	}
+}
+
+func stringSliceToList(slice []string) types.List {
+	values := make([]attr.Value, len(slice))
+	for i, s := range slice {
+		values[i] = types.StringValue(s)
+	}
+	return types.ListValueMust(types.StringType, values)
 }

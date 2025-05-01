@@ -64,6 +64,12 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 				Optional: true,
 				Computed: true,
 			},
+			"role_ids": schema.ListAttribute{
+				ElementType:         types.StringType,
+				Optional:            true,
+				Description:         "Roles id's list attributed to user.",
+				MarkdownDescription: "Roles id's list attributed to user.",
+			},
 			"username": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -82,6 +88,7 @@ type UserModel struct {
 	Name         types.String `tfsdk:"name"`
 	PrimaryEmail types.String `tfsdk:"primary_email"`
 	Profile      ProfileValue `tfsdk:"profile"`
+	RoleIds      types.List   `tfsdk:"role_ids"`
 	Username     types.String `tfsdk:"username"`
 }
 
