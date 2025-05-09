@@ -135,6 +135,11 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
+	if user == nil {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
 	r.updateUserState(user, &state)
 
 	diags = resp.State.Set(ctx, state)

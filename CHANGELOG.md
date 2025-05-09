@@ -1,3 +1,9 @@
+## 0.0.6
+
+BUG FIXES:
+
+- Detect when a user has been deleted from Logto.
+
 ## 0.0.5
 
 IMPROVEMENTS:
