@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/Lenstra/terraform-provider-logto/internal/provider/datasource_application"
 	"github.com/Lenstra/terraform-provider-logto/internal/provider/resource_application"
 	"github.com/Lenstra/terraform-provider-logto/internal/provider/resource_user"
 	"github.com/rs/zerolog"
@@ -185,7 +186,9 @@ func (p *logtoProvider) Configure(ctx context.Context, req provider.ConfigureReq
 
 // DataSources defines the data sources implemented in the provider.
 func (p *logtoProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		datasource_application.ApplicationDataSource,
+	}
 }
 
 // Resources defines the resources implemented in the provider.
