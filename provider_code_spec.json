@@ -37,6 +37,198 @@
 	},
 	"resources": [
 		{
+			"name": "api_resource",
+			"schema": {
+				"attributes": [
+					{
+						"name": "access_token_ttl",
+						"number": {
+							"computed_optional_required": "computed_optional",
+							"description": "The access token TTL in seconds. It affects the `exp` claim of the access token granted for this resource."
+						}
+					},
+					{
+						"name": "name",
+						"string": {
+							"computed_optional_required": "required",
+							"description": "The name of the resource.",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.LengthAtLeast(1)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "id",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "The unique identifier of the resource."
+						}
+					},
+					{
+						"bool": {
+							"computed_optional_required": "computed"
+						},
+						"name": "is_default"
+					},
+					{
+						"list_nested": {
+							"computed_optional_required": "computed",
+							"nested_object": {
+								"attributes": [
+									{
+										"name": "created_at",
+										"number": {
+											"computed_optional_required": "computed"
+										}
+									},
+									{
+										"name": "description",
+										"string": {
+											"computed_optional_required": "computed"
+										}
+									},
+									{
+										"name": "id",
+										"string": {
+											"computed_optional_required": "computed"
+										}
+									},
+									{
+										"name": "name",
+										"string": {
+											"computed_optional_required": "computed"
+										}
+									},
+									{
+										"name": "resource_id",
+										"string": {
+											"computed_optional_required": "computed"
+										}
+									},
+									{
+										"name": "tenant_id",
+										"string": {
+											"computed_optional_required": "computed"
+										}
+									}
+								]
+							}
+						},
+						"name": "scopes"
+					},
+					{
+						"name": "indicator",
+						"string": {
+							"computed_optional_required": "required",
+							"description": "The unique resource indicator. Should be a valid URI.",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.RequiresReplace()"
+									}
+								}
+							],
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.LengthAtLeast(1)"
+									}
+								}
+							]
+						}
+					}
+				]
+			}
+		},
+		{
+			"name": "api_resource_scope",
+			"schema": {
+				"attributes": [
+					{
+						"name": "description",
+						"string": {
+							"computed_optional_required": "computed_optional"
+						}
+					},
+					{
+						"name": "name",
+						"string": {
+							"computed_optional_required": "required",
+							"description": "The name of the scope. It should be unique for the resource.",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.LengthBetween(1, 256)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "created_at",
+						"number": {
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "id",
+						"string": {
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "tenant_id",
+						"string": {
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "resource_id",
+						"string": {
+							"computed_optional_required": "required",
+							"description": "The unique identifier of the resource.",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.RequiresReplace()"
+									}
+								}
+							]
+						}
+					}
+				]
+			}
+		},
+		{
 			"name": "application",
 			"schema": {
 				"attributes": [
@@ -154,6 +346,116 @@
 							}
 						},
 						"name": "cors_allowed_origins"
+					}
+				]
+			}
+		},
+		{
+			"name": "role",
+			"schema": {
+				"attributes": [
+					{
+						"name": "description",
+						"string": {
+							"computed_optional_required": "required",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.LengthBetween(1, 128)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"bool": {
+							"computed_optional_required": "computed_optional"
+						},
+						"name": "is_default"
+					},
+					{
+						"name": "name",
+						"string": {
+							"computed_optional_required": "required",
+							"description": "The name of the role. It should be unique within the tenant.",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.LengthBetween(1, 128)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "id",
+						"string": {
+							"computed_optional_required": "computed",
+							"description": "The unique identifier of the role."
+						}
+					},
+					{
+						"list": {
+							"computed_optional_required": "optional",
+							"description": "The initial API resource scopes assigned to the role.",
+							"element_type": {
+								"string": {}
+							},
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+											}
+										],
+										"schema_definition": "listplanmodifier.RequiresReplace()"
+									}
+								}
+							]
+						},
+						"name": "scope_ids"
+					},
+					{
+						"name": "type",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"description": "The type of the role. It cannot be changed after creation.",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.RequiresReplace()"
+									}
+								}
+							],
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.OneOf(\n\"User\",\n\"MachineToMachine\",\n)"
+									}
+								}
+							]
+						}
 					}
 				]
 			}
