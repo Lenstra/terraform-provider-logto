@@ -159,6 +159,613 @@
 			}
 		},
 		{
+			"name": "sign_in_experience",
+			"schema": {
+				"attributes": [
+					{
+						"name": "id",
+						"string": {
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "agree_to_terms_policy",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.OneOf(\n\"Automatic\",\n\"ManualRegistrationOnly\",\n\"Manual\",\n)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "branding",
+						"single_nested": {
+							"attributes": [
+								{
+									"name": "dark_favicon",
+									"string": {
+										"computed_optional_required": "computed_optional"
+									}
+								},
+								{
+									"name": "dark_logo_url",
+									"string": {
+										"computed_optional_required": "computed_optional"
+									}
+								},
+								{
+									"name": "favicon",
+									"string": {
+										"computed_optional_required": "computed_optional"
+									}
+								},
+								{
+									"name": "logo_url",
+									"string": {
+										"computed_optional_required": "computed_optional"
+									}
+								}
+							],
+							"computed_optional_required": "computed_optional"
+						}
+					},
+					{
+						"name": "captcha_policy",
+						"single_nested": {
+							"attributes": [
+								{
+									"bool": {
+										"computed_optional_required": "computed_optional"
+									},
+									"name": "enabled"
+								}
+							],
+							"computed_optional_required": "computed_optional"
+						}
+					},
+					{
+						"map": {
+							"computed_optional_required": "computed_optional",
+							"description": "Custom content to display on experience flow pages. the page pathname will be the config key, the content will be the config value.",
+							"element_type": {
+								"string": {}
+							}
+						},
+						"name": "custom_content"
+					},
+					{
+						"name": "custom_css",
+						"string": {
+							"computed_optional_required": "computed_optional"
+						}
+					},
+					{
+						"name": "language_info",
+						"single_nested": {
+							"attributes": [
+								{
+									"bool": {
+										"computed_optional_required": "computed_optional"
+									},
+									"name": "auto_detect"
+								},
+								{
+									"name": "fallback_language",
+									"string": {
+										"computed_optional_required": "computed_optional",
+										"validators": [
+											{
+												"custom": {
+													"imports": [
+														{
+															"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+														}
+													],
+													"schema_definition": "stringvalidator.OneOf(\n\"af-ZA\",\n\"am-ET\",\n\"ar\",\n\"ar-AR\",\n\"as-IN\",\n\"az-AZ\",\n\"be-BY\",\n\"bg-BG\",\n\"bn-IN\",\n\"br-FR\",\n\"bs-BA\",\n\"ca-ES\",\n\"cb-IQ\",\n\"co-FR\",\n\"cs-CZ\",\n\"cx-PH\",\n\"cy-GB\",\n\"da-DK\",\n\"de\",\n\"de-DE\",\n\"el-GR\",\n\"en\",\n\"en-GB\",\n\"en-US\",\n\"eo-EO\",\n\"es\",\n\"es-ES\",\n\"es-419\",\n\"et-EE\",\n\"eu-ES\",\n\"fa-IR\",\n\"ff-NG\",\n\"fi\",\n\"fi-FI\",\n\"fo-FO\",\n\"fr\",\n\"fr-CA\",\n\"fr-FR\",\n\"fy-NL\",\n\"ga-IE\",\n\"gl-ES\",\n\"gn-PY\",\n\"gu-IN\",\n\"ha-NG\",\n\"he-IL\",\n\"hi-IN\",\n\"hr-HR\",\n\"ht-HT\",\n\"hu-HU\",\n\"hy-AM\",\n\"id-ID\",\n\"ik-US\",\n\"is-IS\",\n\"it\",\n\"it-IT\",\n\"iu-CA\",\n\"ja\",\n\"ja-JP\",\n\"ja-KS\",\n\"jv-ID\",\n\"ka-GE\",\n\"kk-KZ\",\n\"km-KH\",\n\"kn-IN\",\n\"ko\",\n\"ko-KR\",\n\"ku-TR\",\n\"ky-KG\",\n\"lo-LA\",\n\"lt-LT\",\n\"lv-LV\",\n\"mg-MG\",\n\"mk-MK\",\n\"ml-IN\",\n\"mn-MN\",\n\"mr-IN\",\n\"ms-MY\",\n\"mt-MT\",\n\"my-MM\",\n\"nb-NO\",\n\"ne-NP\",\n\"nl\",\n\"nl-BE\",\n\"nl-NL\",\n\"nn-NO\",\n\"or-IN\",\n\"pa-IN\",\n\"pl-PL\",\n\"ps-AF\",\n\"pt\",\n\"pt-BR\",\n\"pt-PT\",\n\"ro-RO\",\n\"ru\",\n\"ru-RU\",\n\"rw-RW\",\n\"sc-IT\",\n\"si-LK\",\n\"sk-SK\",\n\"sl-SI\",\n\"sn-ZW\",\n\"sq-AL\",\n\"sr-RS\",\n\"sv\",\n\"sv-SE\",\n\"sw-KE\",\n\"sy-SY\",\n\"sz-PL\",\n\"ta-IN\",\n\"te-IN\",\n\"tg-TJ\",\n\"th\",\n\"th-TH\",\n\"tl-PH\",\n\"tr\",\n\"tr-TR\",\n\"tt-RU\",\n\"tz-MA\",\n\"uk-UA\",\n\"ur-PK\",\n\"uz-UZ\",\n\"vi-VN\",\n\"zh\",\n\"zh-CN\",\n\"zh-HK\",\n\"zh-MO\",\n\"zh-TW\",\n\"zz-TR\",\n)"
+												}
+											}
+										]
+									}
+								}
+							],
+							"computed_optional_required": "computed_optional",
+							"description": "Control the language detection policy for the sign-in page."
+						}
+					},
+					{
+						"name": "mfa",
+						"single_nested": {
+							"attributes": [
+								{
+									"list": {
+										"computed_optional_required": "computed_optional",
+										"element_type": {
+											"string": {}
+										}
+									},
+									"name": "factors"
+								},
+								{
+									"name": "organization_required_mfa_policy",
+									"string": {
+										"computed_optional_required": "computed_optional",
+										"validators": [
+											{
+												"custom": {
+													"imports": [
+														{
+															"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+														}
+													],
+													"schema_definition": "stringvalidator.OneOf(\n\"NoPrompt\",\n\"Mandatory\",\n)"
+												}
+											}
+										]
+									}
+								},
+								{
+									"name": "policy",
+									"string": {
+										"computed_optional_required": "computed_optional",
+										"validators": [
+											{
+												"custom": {
+													"imports": [
+														{
+															"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+														}
+													],
+													"schema_definition": "stringvalidator.OneOf(\n\"UserControlled\",\n\"Mandatory\",\n\"PromptOnlyAtSignIn\",\n\"PromptAtSignInAndSignUp\",\n\"NoPrompt\",\n)"
+												}
+											}
+										]
+									}
+								}
+							],
+							"computed_optional_required": "computed_optional",
+							"description": "MFA settings"
+						}
+					},
+					{
+						"name": "password_policy",
+						"single_nested": {
+							"attributes": [
+								{
+									"name": "character_types",
+									"single_nested": {
+										"attributes": [
+											{
+												"name": "min",
+												"number": {
+													"computed_optional_required": "computed_optional"
+												}
+											}
+										],
+										"computed_optional_required": "computed_optional"
+									}
+								},
+								{
+									"name": "length",
+									"single_nested": {
+										"attributes": [
+											{
+												"name": "max",
+												"number": {
+													"computed_optional_required": "computed_optional"
+												}
+											},
+											{
+												"name": "min",
+												"number": {
+													"computed_optional_required": "computed_optional"
+												}
+											}
+										],
+										"computed_optional_required": "computed_optional"
+									}
+								},
+								{
+									"name": "rejects",
+									"single_nested": {
+										"attributes": [
+											{
+												"bool": {
+													"computed_optional_required": "computed_optional",
+													"default": {
+														"static": true
+													}
+												},
+												"name": "pwned"
+											},
+											{
+												"bool": {
+													"computed_optional_required": "computed_optional",
+													"default": {
+														"static": true
+													}
+												},
+												"name": "repetition_and_sequence"
+											},
+											{
+												"bool": {
+													"computed_optional_required": "computed_optional",
+													"default": {
+														"static": true
+													}
+												},
+												"name": "user_info"
+											},
+											{
+												"list": {
+													"computed_optional_required": "computed_optional",
+													"element_type": {
+														"string": {}
+													}
+												},
+												"name": "words"
+											}
+										],
+										"computed_optional_required": "computed_optional"
+									}
+								}
+							],
+							"computed_optional_required": "computed_optional",
+							"description": "Password policies to adjust the password strength requirements."
+						}
+					},
+					{
+						"name": "sentinel_policy",
+						"single_nested": {
+							"attributes": [
+								{
+									"name": "lockout_duration",
+									"number": {
+										"computed_optional_required": "computed_optional"
+									}
+								},
+								{
+									"name": "max_attempts",
+									"number": {
+										"computed_optional_required": "computed_optional"
+									}
+								}
+							],
+							"computed_optional_required": "computed_optional",
+							"description": "Custom sentinel policy settings. Use this field to customize the user lockout policy. The default value is 100 failed attempts within one hour. The user will be locked out for 60 minutes after exceeding the limit."
+						}
+					},
+					{
+						"name": "sign_in_mode",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.OneOf(\n\"SignIn\",\n\"Register\",\n\"SignInAndRegister\",\n)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"bool": {
+							"computed_optional_required": "computed_optional"
+						},
+						"name": "single_sign_on_enabled"
+					},
+					{
+						"name": "social_sign_in",
+						"single_nested": {
+							"attributes": [
+								{
+									"bool": {
+										"computed_optional_required": "computed_optional"
+									},
+									"name": "automatic_account_linking"
+								}
+							],
+							"computed_optional_required": "computed_optional"
+						}
+					},
+					{
+						"list": {
+							"computed_optional_required": "computed_optional",
+							"description": "Specify the social sign-in connectors to display on the sign-in page.",
+							"element_type": {
+								"string": {}
+							}
+						},
+						"name": "social_sign_in_connector_targets"
+					},
+					{
+						"name": "tenant_id",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.LengthAtMost(21)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "email_blocklist_policy",
+						"single_nested": {
+							"attributes": [
+								{
+									"bool": {
+										"computed_optional_required": "computed_optional"
+									},
+									"name": "block_disposable_addresses"
+								},
+								{
+									"bool": {
+										"computed_optional_required": "computed_optional",
+										"description": "Whether to block sub-addresses. (E.g., example+shopping@test.com)"
+									},
+									"name": "block_subaddressing"
+								},
+								{
+									"list": {
+										"computed_optional_required": "computed_optional",
+										"description": "Custom blocklist of email addresses or domains.",
+										"element_type": {
+											"string": {}
+										}
+									},
+									"name": "custom_blocklist"
+								}
+							],
+							"computed_optional_required": "computed_optional",
+							"description": "Define email restriction policies. Users will be prohibited from registering or linking any email addresses that are included in the blocklist."
+						}
+					},
+					{
+						"name": "privacy_policy_url",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.LengthBetween(0, 2048)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "color",
+						"single_nested": {
+							"attributes": [
+								{
+									"name": "dark_primary_color",
+									"string": {
+										"computed_optional_required": "computed_optional",
+										"validators": [
+											{
+												"custom": {
+													"imports": [
+														{
+															"path": "regexp"
+														},
+														{
+															"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+														}
+													],
+													"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"(?i)^#[\\\\da-f]{3}([\\\\da-f]{3})?$\"), \"\")"
+												}
+											}
+										]
+									}
+								},
+								{
+									"bool": {
+										"computed_optional_required": "computed_optional"
+									},
+									"name": "is_dark_mode_enabled"
+								},
+								{
+									"name": "primary_color",
+									"string": {
+										"computed_optional_required": "computed_optional",
+										"validators": [
+											{
+												"custom": {
+													"imports": [
+														{
+															"path": "regexp"
+														},
+														{
+															"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+														}
+													],
+													"schema_definition": "stringvalidator.RegexMatches(regexp.MustCompile(\"(?i)^#[\\\\da-f]{3}([\\\\da-f]{3})?$\"), \"\")"
+												}
+											}
+										]
+									}
+								}
+							],
+							"computed_optional_required": "computed_optional",
+							"description": "Specify the primary branding color for the sign-in page (both light/dark mode)."
+						}
+					},
+					{
+						"name": "terms_of_use_url",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.LengthBetween(0, 2048)"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "sign_in",
+						"single_nested": {
+							"attributes": [
+								{
+									"list_nested": {
+										"computed_optional_required": "computed_optional",
+										"nested_object": {
+											"attributes": [
+												{
+													"name": "identifier",
+													"string": {
+														"computed_optional_required": "computed_optional",
+														"validators": [
+															{
+																"custom": {
+																	"imports": [
+																		{
+																			"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+																		}
+																	],
+																	"schema_definition": "stringvalidator.OneOf(\n\"username\",\n\"email\",\n\"phone\",\n)"
+																}
+															}
+														]
+													}
+												},
+												{
+													"bool": {
+														"computed_optional_required": "computed_optional"
+													},
+													"name": "is_password_primary"
+												},
+												{
+													"bool": {
+														"computed_optional_required": "computed_optional"
+													},
+													"name": "password"
+												},
+												{
+													"bool": {
+														"computed_optional_required": "computed_optional"
+													},
+													"name": "verification_code"
+												}
+											]
+										}
+									},
+									"name": "methods"
+								}
+							],
+							"computed_optional_required": "computed_optional",
+							"description": "Sign-in method settings"
+						}
+					},
+					{
+						"name": "sign_up",
+						"single_nested": {
+							"attributes": [
+								{
+									"list": {
+										"computed_optional_required": "computed_optional",
+										"description": "Specify allowed identifiers when signing-up.",
+										"element_type": {
+											"string": {}
+										}
+									},
+									"name": "identifiers"
+								},
+								{
+									"bool": {
+										"computed_optional_required": "computed_optional",
+										"description": "Whether the user is required to set a password when signing-up."
+									},
+									"name": "password"
+								},
+								{
+									"name": "secondary_identifiers",
+									"single_nested": {
+										"attributes": [
+											{
+												"name": "identifier",
+												"string": {
+													"computed_optional_required": "computed_optional",
+													"description": "Specify a of identifiers."
+												}
+											},
+											{
+												"bool": {
+													"computed_optional_required": "computed_optional"
+												},
+												"name": "verify"
+											}
+										],
+										"computed_optional_required": "computed_optional",
+										"description": "Additional identifiers required during sign-up."
+									}
+								},
+								{
+									"bool": {
+										"computed_optional_required": "computed_optional",
+										"description": "Whether the user is required to verify their email/phone when signing-up."
+									},
+									"name": "verify"
+								}
+							],
+							"computed_optional_required": "computed_optional",
+							"description": "Sign-up method settings"
+						}
+					},
+					{
+						"name": "support_website_url",
+						"string": {
+							"computed_optional_required": "computed_optional"
+						}
+					},
+					{
+						"name": "unknown_session_redirect_url",
+						"string": {
+							"computed_optional_required": "computed_optional"
+						}
+					},
+					{
+						"name": "support_email",
+						"string": {
+							"computed_optional_required": "computed_optional"
+						}
+					}
+				]
+			}
+		},
+		{
 			"name": "user",
 			"schema": {
 				"attributes": [

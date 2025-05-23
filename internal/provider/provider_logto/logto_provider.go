@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/Lenstra/terraform-provider-logto/internal/provider/resource_application"
+	"github.com/Lenstra/terraform-provider-logto/internal/provider/resource_sign_in_experience"
 	"github.com/Lenstra/terraform-provider-logto/internal/provider/resource_user"
 	"github.com/rs/zerolog"
 
@@ -193,5 +194,6 @@ func (p *logtoProvider) Resources(_ context.Context) []func() resource.Resource 
 	return []func() resource.Resource{
 		resource_application.ApplicationResource,
 		resource_user.UserResource,
+		resource_sign_in_experience.SignInExperienceResource,
 	}
 }
