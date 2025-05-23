@@ -1,108 +1,108 @@
 package client
 
 type SignInExperienceModel struct {
-	TenantId           string       `json:"tenantId"`
-	Id                 string       `json:"id"`
-	Color              Color        `json:"color"`
-	Branding           Branding     `json:"branding"`
-	LanguageInfo       LanguageInfo `json:"languageInfo"`
-	TermsOfUseUrl      string       `json:"termsOfUseUrl"`
-	PrivacyPolicyUrl   string       `json:"privacyPolicyUrl"`
-	AgreeToTermsPolicy string       `json:"agreeToTermsPolicy"`
-	SignIn             SignIn       `json:"signIn"`
-	SignUp             SignUp       `json:"signUp"`
+	TenantId           string       `json:"tenantId,omitempty"`
+	Id                 string       `json:"id,omitempty"`
+	Color              Color        `json:"color,omitempty"`
+	Branding           Branding     `json:"branding,omitempty"`
+	LanguageInfo       LanguageInfo `json:"languageInfo,omitempty"`
+	TermsOfUseUrl      string       `json:"termsOfUseUrl,omitempty"`
+	PrivacyPolicyUrl   string       `json:"privacyPolicyUrl,omitempty"`
+	AgreeToTermsPolicy string       `json:"agreeToTermsPolicy,omitempty"`
+	SignIn             SignIn       `json:"signIn,omitempty"`
+	SignUp             SignUp       `json:"signUp,omitempty"`
 
 	SocialSignIn struct {
-		AutomaticAccountLinking bool `json:"automaticAccountLinking"`
-	} `json:"socialSignIn"`
+		AutomaticAccountLinking bool `json:"automaticAccountLinking,omitempty"`
+	} `json:"socialSignIn,omitempty"`
 
-	SocialSignInConnectorTargets []string          `json:"socialSignInConnectorTargets"`
-	SignInMode                   string            `json:"signInMode"`
-	CustomCss                    string            `json:"customCss"`
-	CustomContent                map[string]string `json:"customContent"`
-	PasswordPolicy               PasswordPolicy    `json:"passwordPolicy"`
-	Mfa                          Mfa               `json:"mfa"`
-	SingleSignOnEnabled          bool              `json:"singleSignOnEnabled"`
-	SupportEmail                 string            `json:"supportEmail"`
-	SupportWebsiteUrl            string            `json:"supportWebsiteUrl"`
-	UnknownSessionRedirectUrl    string            `json:"unknownSessionRedirectUrl"`
+	SocialSignInConnectorTargets []string          `json:"socialSignInConnectorTargets,omitempty"`
+	SignInMode                   string            `json:"signInMode,omitempty"`
+	CustomCss                    string            `json:"customCss,omitempty"`
+	CustomContent                map[string]string `json:"customContent,omitempty"`
+	PasswordPolicy               PasswordPolicy    `json:"passwordPolicy,omitempty"`
+	Mfa                          Mfa               `json:"mfa,omitempty"`
+	SingleSignOnEnabled          bool              `json:"singleSignOnEnabled,omitempty"`
+	SupportEmail                 string            `json:"supportEmail,omitempty"`
+	SupportWebsiteUrl            string            `json:"supportWebsiteUrl,omitempty"`
+	UnknownSessionRedirectUrl    string            `json:"unknownSessionRedirectUrl,omitempty"`
 
 	CaptchaPolicy struct {
-		Enabled bool `json:"enabled"`
-	} `json:"captchaPolicy"`
+		Enabled bool `json:"enabled,omitempty"`
+	} `json:"captchaPolicy,omitempty"`
 
-	SentinelPolicy SentinelPolicy `json:"sentinelPolicy"`
+	SentinelPolicy SentinelPolicy `json:"sentinelPolicy,omitempty"`
 
-	EmailBlocklistPolicy EmailBlocklistPolicy `json:"emailBlocklistPolicy"`
+	EmailBlocklistPolicy EmailBlocklistPolicy `json:"emailBlocklistPolicy,omitempty"`
 }
 
 type Color struct {
-	PrimaryColor      string `json:"primaryColor"`
-	IsDarkModeEnabled string `json:"isDarkModeEnabled"`
-	DarkPrimaryColor  string `json:"darkPrimaryColor"`
+	PrimaryColor      string `json:"primaryColor,omitempty"`
+	IsDarkModeEnabled string `json:"isDarkModeEnabled,omitempty"`
+	DarkPrimaryColor  string `json:"darkPrimaryColor,omitempty"`
 }
 
 type Branding struct {
-	LogoUrl     string `json:"logoUrl"`
-	DarkLogoUrl string `json:"darkLogoUrl"`
-	Favicon     string `json:"favicon"`
-	DarkFavicon string `json:"darkFavicon"`
+	LogoUrl     string `json:"logoUrl,omitempty"`
+	DarkLogoUrl string `json:"darkLogoUrl,omitempty"`
+	Favicon     string `json:"favicon,omitempty"`
+	DarkFavicon string `json:"darkFavicon,omitempty"`
 }
 
 type LanguageInfo struct {
-	AutoDetect       bool   `json:"autoDetect"`
-	FallbackLanguage string `json:"fallbackLanguage"`
+	AutoDetect       bool   `json:"autoDetect,omitempty"`
+	FallbackLanguage string `json:"fallbackLanguage,omitempty"`
 }
 
 type SignIn struct {
 	Methods struct {
-		Identifier        string `json:"identifier"`
-		Password          bool   `json:"password"`
-		VerificationCode  bool   `json:"verificationCode"`
-		IsPasswordPrimary bool   `json:"isPasswordPrimary"`
-	} `json:"methods"`
+		Identifier        string `json:"identifier,omitempty"`
+		Password          bool   `json:"password,omitempty"`
+		VerificationCode  bool   `json:"verificationCode,omitempty"`
+		IsPasswordPrimary bool   `json:"isPasswordPrimary,omitempty"`
+	} `json:"methods,omitempty"`
 }
 
 type SignUp struct {
-	Identifiers          []string `json:"identifiers"`
-	Password             bool     `json:"password"`
-	Verify               bool     `json:"verify"`
-	SecondaryIdentifiers []any    `json:"secondaryIdentifiers"`
+	Identifiers          []string `json:"identifiers,omitempty"`
+	Password             bool     `json:"password,omitempty"`
+	Verify               bool     `json:"verify,omitempty"`
+	SecondaryIdentifiers []any    `json:"secondaryIdentifiers,omitempty"`
 }
 
 type PasswordPolicy struct {
 	Length struct {
-		Min int64 `json:"min"`
-		Max int64 `json:"max"`
-	} `json:"length"`
+		Min int64 `json:"min,omitempty"`
+		Max int64 `json:"max,omitempty"`
+	} `json:"length,omitempty"`
 
 	CharacterTypes struct {
-		Min int64 `json:"min"`
-	} `json:"characterTypes"`
+		Min int64 `json:"min,omitempty"`
+	} `json:"characterTypes,omitempty"`
 
-	Rejects Rejects `json:"rejects"`
+	Rejects Rejects `json:"rejects,omitempty"`
 }
 
 type Rejects struct {
-	Pwned                 bool     `json:"pwned"`
-	RepetitionAndSequence bool     `json:"repetitionAndSequence"`
-	UserInfo              bool     `json:"userInfo"`
-	Words                 []string `json:"words"`
+	Pwned                 bool     `json:"pwned,omitempty"`
+	RepetitionAndSequence bool     `json:"repetitionAndSequence,omitempty"`
+	UserInfo              bool     `json:"userInfo,omitempty"`
+	Words                 []string `json:"words,omitempty"`
 }
 
 type SentinelPolicy struct {
-	MaxAttempts     float64 `json:"maxAttempts"`
-	LockoutDuration float64 `json:"lockoutDuration"`
+	MaxAttempts     float64 `json:"maxAttempts,omitempty"`
+	LockoutDuration float64 `json:"lockoutDuration,omitempty"`
 }
 
 type Mfa struct {
-	Factors                       []string `json:"factors"`
-	Policy                        string   `json:"policy"`
-	OrganizationRequiredMfaPolicy string   `json:"organizationRequiredMfaPolicy"`
+	Factors                       []string `json:"factors,omitempty"`
+	Policy                        string   `json:"policy,omitempty"`
+	OrganizationRequiredMfaPolicy string   `json:"organizationRequiredMfaPolicy,omitempty"`
 }
 
 type EmailBlocklistPolicy struct {
-	BlockDisposableAddresses bool `json:"blockDisposableAddresses"`
-	BlockSubaddressing       bool `json:"blockSubaddressing"`
-	CustomBlocklist          bool `json:"customBlocklist"`
+	BlockDisposableAddresses bool `json:"blockDisposableAddresses,omitempty"`
+	BlockSubaddressing       bool `json:"blockSubaddressing,omitempty"`
+	CustomBlocklist          bool `json:"customBlocklist,omitempty"`
 }

@@ -2,20 +2,45 @@ package client
 
 import (
 	"context"
+	"net/http"
 )
 
-func (c *Client) SignInExperienceGet(ctx context.Context, id string) (*SignInExperienceModel, error) {
-	return nil, nil
-}
+func (c *Client) SignInExperienceGet(ctx context.Context) (*SignInExperienceModel, error) {
+	req := &request{
+		method: http.MethodGet,
+		path:   "api/sign-in-exp/",
+	}
+	res, err := expect(200, 404)(c.do(ctx, req))
+	if err != nil {
+		return nil, err
+	}
 
-func (c *Client) SignInExperienceCreate(ctx context.Context, signInExperience *SignInExperienceModel) (*SignInExperienceModel, error) {
-	return nil, nil
-}
+	if res.StatusCode == 404 {
+		return nil, nil
+	}
 
-func (c *Client) SignInExperienceDelete(ctx context.Context, id string) error {
-	return nil
+	var signInExperience SignInExperienceModel
+	if err := decode(res.Body, &signInExperience); err != nil {
+		return nil, err
+	}
+	return &signInExperience, nil
 }
 
 func (c *Client) SignInExperienceUpdate(ctx context.Context, signInExperience *SignInExperienceModel) (*SignInExperienceModel, error) {
-	return nil, nil
+	req := &request{
+		method: http.MethodPatch,
+		path:   "/api/sign-in-exp",
+		body:   signInExperience,
+	}
+
+	res, err := expect(200)(c.do(ctx, req))
+	if err != nil {
+		return nil, err
+	}
+
+	var returnSignInExp SignInExperienceModel
+	if err := decode(res.Body, &signInExperience); err != nil {
+		return nil, err
+	}
+	return &returnSignInExp, nil
 }
