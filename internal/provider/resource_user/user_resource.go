@@ -205,8 +205,18 @@ func (r *userResource) updateUserState(user *client.UserModel, model *UserModel)
 	model.Username = types.StringValue(user.Username)
 	model.Name = types.StringValue(user.Name)
 
-	model.Profile.FamilyName = types.StringValue(user.Profile.FamilyName)
-	model.Profile.GivenName = types.StringValue(user.Profile.GivenName)
-	model.Profile.MiddleName = types.StringValue(user.Profile.MiddleName)
-	model.Profile.Nickname = types.StringValue(user.Profile.Nickname)
+	if user.Profile != nil {
+		if !model.Profile.FamilyName.IsNull() {
+			model.Profile.FamilyName = types.StringValue(user.Profile.FamilyName)
+		}
+		if !model.Profile.GivenName.IsNull() {
+			model.Profile.GivenName = types.StringValue(user.Profile.GivenName)
+		}
+		if !model.Profile.MiddleName.IsNull() {
+			model.Profile.MiddleName = types.StringValue(user.Profile.MiddleName)
+		}
+		if !model.Profile.Nickname.IsNull() {
+			model.Profile.Nickname = types.StringValue(user.Profile.Nickname)
+		}
+	}
 }

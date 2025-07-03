@@ -1,9 +1,3 @@
-## 0.0.7
-
-BUG FIXES:
-
-- Fixed user creation error by handling empty profile fields correctly in state update.
-
 ## 0.0.6
 
 BUG FIXES:
