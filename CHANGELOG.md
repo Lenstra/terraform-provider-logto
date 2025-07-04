@@ -1,3 +1,21 @@
+## 0.0.9
+
+IMPROVEMENTS:
+
+- Log more information on errors when calling the API.
+
+## 0.0.8
+
+BUG FIXES:
+
+- Revert changes from v0.0.7.
+
+## 0.0.7
+
+BUG FIXES:
+
+- Fixed user creation error by handling empty profile fields correctly in state update.
+
 ## 0.0.6
 
 BUG FIXES:
