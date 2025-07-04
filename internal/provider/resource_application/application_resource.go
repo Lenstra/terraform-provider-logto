@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Lenstra/terraform-provider-logto/client"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -132,21 +133,31 @@ func convertToTerraformModel(ctx context.Context, app *client.ApplicationModel, 
 	}
 
 	if app.OidcClientMetadata != nil {
-		model.RedirectUris, diags = basetypes.NewListValueFrom(ctx, types.StringType, app.OidcClientMetadata.RedirectUris)
+		model.RedirectUris, diags = convertList(ctx, types.StringType, app.OidcClientMetadata.RedirectUris)
 		if diags.HasError() {
 			return
 		}
-		model.PostLogoutRedirectUris, diags = basetypes.NewListValueFrom(ctx, types.StringType, app.OidcClientMetadata.PostLogoutRedirectUris)
+		model.PostLogoutRedirectUris, diags = convertList(ctx, types.StringType, app.OidcClientMetadata.PostLogoutRedirectUris)
 		if diags.HasError() {
 			return
 		}
 	}
 
+	var corsAllowedOrigins []string
 	if app.CustomClientMetadata != nil {
-		model.CorsAllowedOrigins, diags = basetypes.NewListValueFrom(ctx, types.StringType, app.CustomClientMetadata.CorsAllowedOrigins)
-		if diags.HasError() {
-			return
-		}
+		corsAllowedOrigins = app.CustomClientMetadata.CorsAllowedOrigins
 	}
+	model.CorsAllowedOrigins, diags = convertList(ctx, types.StringType, corsAllowedOrigins)
+	if diags.HasError() {
+		return
+	}
+
 	return
+}
+
+func convertList[E any](ctx context.Context, elementType attr.Type, list []E) (basetypes.ListValue, diag.Diagnostics) {
+	if len(list) == 0 {
+		return basetypes.NewListValueFrom(ctx, elementType, []attr.Value{})
+	}
+	return basetypes.NewListValueFrom(ctx, elementType, list)
 }

@@ -20,6 +20,10 @@ func ApplicationResourceSchema(ctx context.Context) schema.Schema {
 			"cors_allowed_origins": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
+				Computed:    true,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.NullIsEmpty(),
+				},
 			},
 			"description": schema.StringAttribute{
 				Optional: true,

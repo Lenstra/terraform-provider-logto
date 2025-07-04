@@ -175,10 +175,22 @@
 					{
 						"name": "cors_allowed_origins",
 						"list": {
-							"computed_optional_required": "optional",
+							"computed_optional_required": "computed_optional",
 							"element_type": {
 								"string": {}
-							}
+							},
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/Lenstra/terraform-provider-logto/internal/provider/planmodifiers/listplanmodifier"
+											}
+										],
+										"schema_definition": "listplanmodifier.NullIsEmpty()"
+									}
+								}
+							]
 						}
 					}
 				]

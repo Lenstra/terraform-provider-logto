@@ -1,3 +1,9 @@
+## 0.0.11
+
+BUG FIXES:
+
+- Fix handling of argument `cors_allowed_origins` in resource `logto_application`.
+
 ## 0.0.10
 
 BUG FIXES:
