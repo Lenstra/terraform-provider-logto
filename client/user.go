@@ -63,6 +63,10 @@ func (c *Client) UserDelete(ctx context.Context, id string) error {
 }
 
 func (c *Client) UserUpdate(ctx context.Context, user *UserModel) (*UserModel, error) {
+	if user.ID == "" {
+		return nil, errEmptyID
+	}
+
 	req := &request{
 		method: http.MethodPatch,
 		path:   "api/users/" + user.ID,

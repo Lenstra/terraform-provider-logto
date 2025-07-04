@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/Lenstra/terraform-provider-logto/client"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -44,46 +46,17 @@ func (r *userResource) Configure(_ context.Context, req resource.ConfigureReques
 }
 
 func (r *userResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	user, err := r.client.UserGet(ctx, req.ID)
-	if err != nil {
-		resp.Diagnostics.AddError("Error retrieving user during import", err.Error())
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), user.ID)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("primary_email"), user.PrimaryEmail)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("username"), user.Username)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), user.Name)...)
-
-	if user.Profile != nil {
-		profilePath := path.Root("profile")
-
-		if user.Profile.FamilyName != "" {
-			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, profilePath.AtName("family_name"), user.Profile.FamilyName)...)
-		}
-
-		if user.Profile.GivenName != "" {
-			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, profilePath.AtName("given_name"), user.Profile.GivenName)...)
-		}
-
-		if user.Profile.MiddleName != "" {
-			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, profilePath.AtName("middle_name"), user.Profile.MiddleName)...)
-		}
-
-		if user.Profile.Nickname != "" {
-			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, profilePath.AtName("nickname"), user.Profile.Nickname)...)
-		}
-	}
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan UserModel
+	var plan, state UserModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	user := decodePlan(plan)
+	user := decodePlan(ctx, plan)
 
 	user, err := r.client.UserCreate(ctx, user)
 	if err != nil {
@@ -91,7 +64,11 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	state := r.convertToUserModel(user)
+	diags = convertToTerraformModel(ctx, user, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -115,7 +92,11 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	state = r.convertToUserModel(user)
+	diags = convertToTerraformModel(ctx, user, &state)
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -127,14 +108,7 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	user := decodePlan(plan)
-
-	diags = req.State.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	user.ID = state.Id.ValueString()
+	user := decodePlan(ctx, plan)
 
 	user, err := r.client.UserUpdate(ctx, user)
 	if err != nil {
@@ -142,8 +116,12 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	state = r.convertToUserModel(user)
-	diags = resp.State.Set(ctx, state)
+	diags = convertToTerraformModel(ctx, user, &state)
+	resp.Diagnostics.Append(diags...)
+	if diags.HasError() {
+		return
+	}
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 }
 
@@ -161,8 +139,9 @@ func (r *userResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 }
 
-func decodePlan(plan UserModel) *client.UserModel {
+func decodePlan(_ context.Context, plan UserModel) *client.UserModel {
 	return &client.UserModel{
+		ID:           plan.Id.ValueString(),
 		PrimaryEmail: plan.PrimaryEmail.ValueString(),
 		Username:     plan.Username.ValueString(),
 		Name:         plan.Name.ValueString(),
@@ -175,8 +154,8 @@ func decodePlan(plan UserModel) *client.UserModel {
 	}
 }
 
-func (r *userResource) convertToUserModel(user *client.UserModel) UserModel {
-	model := UserModel{
+func convertToTerraformModel(_ context.Context, user *client.UserModel, model *UserModel) diag.Diagnostics {
+	*model = UserModel{
 		Id:           types.StringValue(user.ID),
 		PrimaryEmail: types.StringValue(user.PrimaryEmail),
 		Username:     types.StringValue(user.Username),
@@ -189,7 +168,9 @@ func (r *userResource) convertToUserModel(user *client.UserModel) UserModel {
 			GivenName:  types.StringValue(user.Profile.GivenName),
 			MiddleName: types.StringValue(user.Profile.MiddleName),
 			Nickname:   types.StringValue(user.Profile.Nickname),
+			state:      attr.ValueStateKnown,
 		}
 	}
-	return model
+
+	return nil
 }
