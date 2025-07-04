@@ -5,7 +5,6 @@ import (
 
 	"github.com/Lenstra/terraform-provider-logto/client"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -25,11 +24,7 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	diags = convertToTerraformModel(ctx, user, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	convertToTerraformModel(ctx, user, &state)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -53,11 +48,7 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	diags = convertToTerraformModel(ctx, user, &state)
-	resp.Diagnostics.Append(diags...)
-	if diags.HasError() {
-		return
-	}
+	convertToTerraformModel(ctx, user, &state)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -77,11 +68,7 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	diags = convertToTerraformModel(ctx, user, &state)
-	resp.Diagnostics.Append(diags...)
-	if diags.HasError() {
-		return
-	}
+	convertToTerraformModel(ctx, user, &state)
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -115,7 +102,7 @@ func decodePlan(_ context.Context, plan UserModel) *client.UserModel {
 	}
 }
 
-func convertToTerraformModel(_ context.Context, user *client.UserModel, model *UserModel) diag.Diagnostics {
+func convertToTerraformModel(_ context.Context, user *client.UserModel, model *UserModel) {
 	*model = UserModel{
 		Id:           types.StringValue(user.ID),
 		PrimaryEmail: types.StringValue(user.PrimaryEmail),
@@ -132,6 +119,4 @@ func convertToTerraformModel(_ context.Context, user *client.UserModel, model *U
 			state:      attr.ValueStateKnown,
 		}
 	}
-
-	return nil
 }
