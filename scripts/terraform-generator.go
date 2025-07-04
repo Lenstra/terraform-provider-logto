@@ -1,122 +1,35 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"os"
+	"strings"
 
 	"os/exec"
 
-	"github.com/hashicorp/terraform-plugin-codegen-spec/code"
-	"github.com/hashicorp/terraform-plugin-codegen-spec/datasource"
-	"github.com/hashicorp/terraform-plugin-codegen-spec/resource"
-	"github.com/hashicorp/terraform-plugin-codegen-spec/schema"
-	"github.com/hashicorp/terraform-plugin-codegen-spec/spec"
+	tfgen "github.com/Lenstra/terraform-provider-logto/scripts/terraform-generator"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
+func main() {
+	err := Main()
+	if err != nil {
+		log.Fatalf("err: %v", err)
+	}
+}
+
 func Main() error {
-	resp, err := http.Get("https://openapi.logto.io/source.yaml")
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("expected 200 status code, got %s", resp.Status)
-	}
-
-	f, err := os.CreateTemp("", "openapi")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(f.Name())
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	_, err = f.Write(data)
-	if err != nil {
-		return err
-	}
-	f.Close()
-
-	cmd := exec.Command(
-		"tfplugingen-openapi",
-		"generate",
-		"--config=./config/generator_config.yml",
-		"--output=./provider_code_spec.json",
-		f.Name(),
-	)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-
-	spec, err := readSpec("provider_code_spec.json")
-	if err != nil {
-		return err
-	}
-	extra, err := readSpec("config/provider_code_extra.json")
+	ctx := context.Background()
+	spec, extra, err := tfgen.Load(ctx)
 	if err != nil {
 		return err
 	}
 
-	// use the provider given in our extra conf
-	spec.Provider = extra.Provider
-
-	resources := map[string]resource.Resource{}
-	for _, r := range extra.Resources {
-		resources[r.Name] = r
-	}
-	datasources := map[string]datasource.DataSource{}
-	for _, r := range extra.DataSources {
-		datasources[r.Name] = r
-	}
-
-	for _, resource := range spec.Resources {
-		for _, a := range resource.Schema.Attributes {
-			if a.String != nil && a.Name == "id" {
-				a.String.PlanModifiers = append(a.String.PlanModifiers, schema.StringPlanModifier{
-					Custom: &schema.CustomPlanModifier{
-						Imports: []code.Import{
-							{Path: "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"},
-						},
-						SchemaDefinition: "stringplanmodifier.UseStateForUnknown()",
-					},
-				})
-			}
-			if a.List != nil && a.List.ComputedOptionalRequired == schema.Optional {
-				a.List.ComputedOptionalRequired = schema.ComputedOptional
-				a.List.PlanModifiers = append(a.List.PlanModifiers, schema.ListPlanModifier{
-					Custom: &schema.CustomPlanModifier{
-						Imports: []code.Import{
-							{Path: "github.com/Lenstra/terraform-provider-logto/internal/provider/planmodifiers/listplanmodifier"},
-						},
-						SchemaDefinition: "listplanmodifier.NullIsEmpty()",
-					},
-				})
-			}
-		}
-		extraResource, found := resources[resource.Name]
-		if found {
-			resource.Schema.Attributes = append(
-				resource.Schema.Attributes,
-				extraResource.Schema.Attributes...,
-			)
-		}
-	}
-	for _, datasource := range spec.DataSources {
-		extraDatasource, found := datasources[datasource.Name]
-		if found {
-			datasource.Schema.Attributes = append(
-				datasource.Schema.Attributes,
-				extraDatasource.Schema.Attributes...,
-			)
-		}
-	}
+	tfgen.Update(spec, extra)
 
 	content, err := json.MarshalIndent(spec, "", "\t")
 	if err != nil {
@@ -127,38 +40,95 @@ func Main() error {
 		return err
 	}
 
-	cmd = exec.Command(
+	input := "provider_code_spec.json"
+	output := "internal/provider"
+	if err := generate(input, output); err != nil {
+		return err
+	}
+	return generateAdditionalFiles(output)
+}
+
+func generate(input, output string) error {
+	cmd := exec.Command(
 		"tfplugingen-framework",
 		"generate",
 		"all",
-		"--input=./provider_code_spec.json",
-		"--output=internal/provider",
+		"--input="+input,
+		"--output="+output,
 	)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
+	return cmd.Run()
+}
+
+func generateAdditionalFiles(output string) error {
+	entries, err := os.ReadDir(output)
+	if err != nil {
 		return err
 	}
 
+	for _, entry := range entries {
+		if entry.IsDir() && strings.HasPrefix(entry.Name(), "resource_") {
+			resourceName := strings.TrimPrefix(entry.Name(), "resource_")
+			path := fmt.Sprintf("internal/provider/%s/%s_resource_impl_gen.go", entry.Name(), resourceName)
+			content := []byte(template(resourceName))
+			if err := os.WriteFile(path, content, 0o644); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
-func readSpec(path string) (*spec.Specification, error) {
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	var extra spec.Specification
-	if err := json.Unmarshal(content, &extra); err != nil {
-		return nil, err
-	}
-	return &extra, nil
+func template(name string) string {
+
+	return fmt.Sprintf(`// Code generated by terraform-generator DO NOT EDIT.
+package resource_%[1]s
+
+import (
+	"context"
+
+	"github.com/Lenstra/terraform-provider-logto/client"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+)
+
+// Ensure the implementation satisfies the expected interfaces.
+var (
+	_ resource.Resource                = &%[1]sResource{}
+	_ resource.ResourceWithConfigure   = &%[1]sResource{}
+	_ resource.ResourceWithImportState = &%[1]sResource{}
+)
+
+type %[1]sResource struct {
+	client *client.Client
 }
 
-func main() {
-	err := Main()
-	if err != nil {
-		log.Fatalf("err: %v", err)
-		os.Exit(1)
+func %[2]sResource() resource.Resource {
+	return &%[1]sResource{}
+}
+
+func (r *%[1]sResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_%[1]s"
+}
+
+func (r *%[1]sResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = %[2]sResourceSchema(ctx)
+}
+
+func (r *%[1]sResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
 	}
+	client, ok := req.ProviderData.(*client.Client)
+	if !ok {
+		return
+	}
+	r.client = client
+}
+
+func (r *%[1]sResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+`, name, cases.Title(language.English).String(name))
 }
