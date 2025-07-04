@@ -57,6 +57,23 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("logto_user.test_user", "profile.nickname", "test_nickname_modified"),
 				),
 			},
+			// Re-create the user with a profile
+			{
+				Taint: []string{"logto_user.test_user"},
+				Config: ProviderConfig + `
+				resource "logto_user" "test_user" {
+						name              = "test_user_modified"
+						primary_email     = "test_user@test.fr"
+
+						profile = {
+							family_name = "test_family_name_modified"
+							given_name  = "test_given_name_modified"
+							middle_name = "test_middle_name_modified"
+							nickname    = "test_nickname_modified"
+						}
+				}
+			`,
+			},
 			{
 				Config: ProviderConfig + `
 					resource "logto_user" "test_user" {
