@@ -18,10 +18,6 @@ func TestAccApplicationResourceWithoutTypeUpdate(t *testing.T) {
 									description = "test app"
 									type 				= "MachineToMachine"
 							}
-
-							output "test_app_secrets" {
-								value = logto_application.test_app.secrets
-							}
 							`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify attributes
@@ -31,7 +27,6 @@ func TestAccApplicationResourceWithoutTypeUpdate(t *testing.T) {
 
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("logto_application.test_app", "id"),
-					resource.TestCheckResourceAttrSet("logto_application.test_app", "secrets.%"),
 				),
 			},
 			// ImportState testing
@@ -57,7 +52,6 @@ func TestAccApplicationResourceWithoutTypeUpdate(t *testing.T) {
 
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("logto_application.test_app", "id"),
-					resource.TestCheckResourceAttrSet("logto_application.test_app", "secrets.%"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -86,7 +80,6 @@ func TestAccApplicationResourceWithTypeUpdate(t *testing.T) {
 
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("logto_application.test_app", "id"),
-					resource.TestCheckResourceAttrSet("logto_application.test_app", "secrets.%"),
 				),
 			},
 			// ImportState testing
@@ -112,7 +105,6 @@ func TestAccApplicationResourceWithTypeUpdate(t *testing.T) {
 
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("logto_application.test_app", "id"),
-					resource.TestCheckResourceAttrSet("logto_application.test_app", "secrets.%"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

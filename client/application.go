@@ -64,6 +64,10 @@ func (c *Client) ApplicationDelete(ctx context.Context, id string) error {
 }
 
 func (c *Client) ApplicationUpdate(ctx context.Context, app *ApplicationModel) (*ApplicationModel, error) {
+	if app.ID == "" {
+		return nil, errEmptyID
+	}
+
 	req := &request{
 		method: http.MethodPatch,
 		path:   "api/applications/" + app.ID,

@@ -4,6 +4,7 @@ package resource_application
 
 import (
 	"context"
+	"github.com/Lenstra/terraform-provider-logto/internal/provider/planmodifiers/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -28,6 +29,9 @@ func ApplicationResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The unique identifier of the application.",
 				MarkdownDescription: "The unique identifier of the application.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"is_admin": schema.BoolAttribute{
 				Computed: true,
@@ -45,14 +49,18 @@ func ApplicationResourceSchema(ctx context.Context) schema.Schema {
 			"post_logout_redirect_uris": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
+				Computed:    true,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.NullIsEmpty(),
+				},
 			},
 			"redirect_uris": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
-			},
-			"secrets": schema.MapAttribute{
-				ElementType: types.StringType,
 				Computed:    true,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.NullIsEmpty(),
+				},
 			},
 			"tenant_id": schema.StringAttribute{
 				Computed: true,
@@ -86,7 +94,6 @@ type ApplicationModel struct {
 	Name                   types.String `tfsdk:"name"`
 	PostLogoutRedirectUris types.List   `tfsdk:"post_logout_redirect_uris"`
 	RedirectUris           types.List   `tfsdk:"redirect_uris"`
-	Secrets                types.Map    `tfsdk:"secrets"`
 	TenantId               types.String `tfsdk:"tenant_id"`
 	Type                   types.String `tfsdk:"type"`
 }

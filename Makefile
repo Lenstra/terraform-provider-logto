@@ -14,7 +14,7 @@ lint:
 	golangci-lint run
 
 .PHONY: install
-generate:
+install:
 	go install .
 
 .PHONY: generate
