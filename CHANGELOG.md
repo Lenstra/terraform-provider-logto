@@ -1,3 +1,9 @@
+## 0.0.10
+
+BUG FIXES:
+
+- Fix handling of `profile` argument in `logto_user` resource.
+
 ## 0.0.9
 
 IMPROVEMENTS:
