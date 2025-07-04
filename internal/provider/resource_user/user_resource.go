@@ -83,20 +83,7 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	profile := &client.Profile{
-		FamilyName: "",
-		GivenName:  "",
-		MiddleName: "",
-		Nickname:   "",
-	}
-
-	user := &client.UserModel{
-		Name:         plan.Name.ValueString(),
-		PrimaryEmail: plan.PrimaryEmail.ValueString(),
-		Username:     plan.Username.ValueString(),
-		Profile:      profile,
-	}
+	user := decodePlan(plan)
 
 	user, err := r.client.UserCreate(ctx, user)
 	if err != nil {
@@ -153,25 +140,14 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	user := decodePlan(plan)
 
 	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	user := &client.UserModel{
-		ID:           state.Id.ValueString(),
-		PrimaryEmail: plan.PrimaryEmail.ValueString(),
-		Username:     plan.Username.ValueString(),
-		Name:         plan.Name.ValueString(),
-		Profile: &client.Profile{
-			FamilyName: plan.Profile.FamilyName.ValueString(),
-			GivenName:  plan.Profile.GivenName.ValueString(),
-			MiddleName: plan.Profile.MiddleName.ValueString(),
-			Nickname:   plan.Profile.Nickname.ValueString(),
-		},
-	}
+	user.ID = state.Id.ValueString()
 
 	user, err := r.client.UserUpdate(ctx, user)
 	if err != nil {
@@ -183,6 +159,20 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
+}
+
+func decodePlan(plan UserModel) *client.UserModel {
+	return &client.UserModel{
+		PrimaryEmail: plan.PrimaryEmail.ValueString(),
+		Username:     plan.Username.ValueString(),
+		Name:         plan.Name.ValueString(),
+		Profile: &client.Profile{
+			FamilyName: plan.Profile.FamilyName.ValueString(),
+			GivenName:  plan.Profile.GivenName.ValueString(),
+			MiddleName: plan.Profile.MiddleName.ValueString(),
+			Nickname:   plan.Profile.Nickname.ValueString(),
+		},
+	}
 }
 
 func (r *userResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
