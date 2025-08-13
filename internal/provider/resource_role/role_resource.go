@@ -2,12 +2,14 @@ package resource_role
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Lenstra/terraform-provider-logto/client"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -49,34 +51,16 @@ func (r *roleResource) ImportState(ctx context.Context, req resource.ImportState
 }
 
 func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan RoleModel
+	var plan, state RoleModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	role := &client.RoleModel{
-		Name:        plan.Name.ValueString(),
-		Description: plan.Description.ValueString(),
-	}
+	role := decodePlan(ctx, plan)
 
-	if !plan.Type.IsNull() && !plan.Type.IsUnknown() {
-		role.Type = plan.Type.ValueString()
-	}
-
-	if !plan.IsDefault.IsNull() && !plan.IsDefault.IsUnknown() {
-		role.IsDefault = plan.IsDefault.ValueBool()
-	}
-
-	if !plan.ScopeIds.IsNull() && !plan.ScopeIds.IsUnknown() {
-		var scopeIDs []string
-		diags := plan.ScopeIds.ElementsAs(ctx, &scopeIDs, false)
-		resp.Diagnostics.Append(diags...)
-		if !resp.Diagnostics.HasError() {
-			role.ScopeIds = scopeIDs
-		}
-	}
+	fmt.Printf("role %v : ", role)
 
 	role, err := r.client.RoleCreate(ctx, role)
 	if err != nil {
@@ -84,9 +68,13 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	r.updateRoleState(role, &plan)
+	diags = convertToTerraformModel(ctx, role, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
@@ -103,6 +91,9 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		resp.Diagnostics.AddError("Error reading role", err.Error())
 		return
 	}
+	if role == nil {
+		resp.State.RemoveResource(ctx)
+	}
 
 	roleScopes, err := r.client.RoleScopesGet(ctx, state.Id.ValueString())
 	if err != nil {
@@ -111,16 +102,20 @@ func (r *roleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	if len(roleScopes) == 0 {
-		state.ScopeIds = types.ListNull(types.StringType)
+		role.ScopeIds = nil
 	} else {
 		scopeIds := make([]string, 0, len(roleScopes))
 		for _, roleScope := range roleScopes {
 			scopeIds = append(scopeIds, roleScope.ID)
 		}
-		state.ScopeIds = stringSliceToList(scopeIds)
+		role.ScopeIds = scopeIds
 	}
 
-	r.updateRoleState(role, &state)
+	diags = convertToTerraformModel(ctx, role, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -134,25 +129,7 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	diags = req.State.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	role := &client.RoleModel{
-		ID:          state.Id.ValueString(),
-		Name:        plan.Name.ValueString(),
-		Description: plan.Description.ValueString(),
-	}
-
-	if !plan.Type.IsNull() && !plan.Type.IsUnknown() {
-		role.Type = plan.Type.ValueString()
-	}
-
-	if !plan.IsDefault.IsNull() && !plan.IsDefault.IsUnknown() {
-		role.IsDefault = plan.IsDefault.ValueBool()
-	}
+	role := decodePlan(ctx, plan)
 
 	role, err := r.client.RoleUpdate(ctx, role)
 	if err != nil {
@@ -160,9 +137,13 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	r.updateRoleState(role, &plan)
+	diags = convertToTerraformModel(ctx, role, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
@@ -180,28 +161,46 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 }
 
-func stringSliceToList(slice []string) types.List {
-	values := make([]attr.Value, len(slice))
-	for i, s := range slice {
-		values[i] = types.StringValue(s)
+func convertToTerraformModel(ctx context.Context, role *client.RoleModel, model *RoleModel) (diags diag.Diagnostics) {
+	*model = RoleModel{
+		Id:          types.StringValue(role.ID),
+		Name:        types.StringValue(role.Name),
+		Description: types.StringValue(role.Description),
+		Type:        types.StringValue(role.Type),
+		IsDefault:   types.BoolValue(role.IsDefault),
 	}
-	return types.ListValueMust(types.StringType, values)
+
+	if role.ScopeIds != nil {
+		model.ScopeIds, diags = basetypes.NewListValueFrom(ctx, types.StringType, role.ScopeIds)
+		if diags.HasError() {
+			return diags
+		}
+	}
+	return
 }
 
-func (r *roleResource) updateRoleState(role *client.RoleModel, model *RoleModel) {
-	model.Id = types.StringValue(role.ID)
-	model.Name = types.StringValue(role.Name)
-	model.Description = types.StringValue(role.Description)
-
-	if role.Type != "" {
-		model.Type = types.StringValue(role.Type)
-	} else {
-		model.Type = types.StringNull()
+func decodePlan(ctx context.Context, plan RoleModel) *client.RoleModel {
+	model := &client.RoleModel{
+		ID:          plan.Id.ValueString(),
+		Name:        plan.Name.ValueString(),
+		Description: plan.Description.ValueString(),
 	}
 
-	if role.IsDefault {
-		model.IsDefault = types.BoolValue(role.IsDefault)
-	} else {
-		model.IsDefault = types.BoolNull()
+	if !plan.Type.IsNull() && !plan.Type.IsUnknown() {
+		model.Type = plan.Type.ValueString()
 	}
+
+	if !plan.IsDefault.IsNull() && !plan.IsDefault.IsUnknown() {
+		model.IsDefault = plan.IsDefault.ValueBool()
+	}
+
+	if !plan.ScopeIds.IsNull() && !plan.ScopeIds.IsUnknown() {
+		var scopeIDs []string
+		diags := plan.ScopeIds.ElementsAs(ctx, &scopeIDs, false)
+		if !diags.HasError() {
+			model.ScopeIds = scopeIDs
+		}
+	}
+
+	return model
 }

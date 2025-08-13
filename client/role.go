@@ -33,6 +33,10 @@ func (c *Client) RoleGet(ctx context.Context, id string) (*RoleModel, error) {
 }
 
 func (c *Client) RoleScopesGet(ctx context.Context, roleId string) ([]ScopeModel, error) {
+	if roleId == "" {
+		return nil, errEmptyID
+	}
+
 	req := &request{
 		method: http.MethodGet,
 		path:   path.Join("api/roles", roleId, "scopes"),
@@ -88,6 +92,10 @@ func (c *Client) RoleDelete(ctx context.Context, id string) error {
 }
 
 func (c *Client) RoleUpdate(ctx context.Context, role *RoleModel) (*RoleModel, error) {
+	if role.ID == "" {
+		return nil, errEmptyID
+	}
+
 	req := &request{
 		method: http.MethodPatch,
 		path:   path.Join("api/roles", role.ID),
