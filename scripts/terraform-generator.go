@@ -109,7 +109,7 @@ func %[2]sResource() resource.Resource {
 }
 
 func (r *%[1]sResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_%[1]s"
+	resp.TypeName = req.ProviderTypeName + "_%[3]s"
 }
 
 func (r *%[1]sResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {

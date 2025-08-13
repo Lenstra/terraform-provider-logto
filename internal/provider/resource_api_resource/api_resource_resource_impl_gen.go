@@ -25,7 +25,7 @@ func ApiResourceResource() resource.Resource {
 }
 
 func (r *apiResourceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_apiResource"
+	resp.TypeName = req.ProviderTypeName + "_api_resource"
 }
 
 func (r *apiResourceResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {

@@ -2,9 +2,9 @@ package resource_role
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Lenstra/terraform-provider-logto/client"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -21,12 +21,22 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	role := decodePlan(ctx, plan)
 
-	fmt.Printf("role %v : ", role)
-
 	role, err := r.client.RoleCreate(ctx, role)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating role", err.Error())
 		return
+	}
+
+	roleScopes, err := r.client.RoleScopesGet(ctx, role.ID)
+	if err != nil {
+		resp.Diagnostics.AddError("Error fetching roleScopes just after role creation", err.Error())
+		return
+	}
+
+	if roleScopes != nil {
+		for _, scope := range roleScopes {
+			role.ScopeIds = append(role.ScopeIds, scope.ID)
+		}
 	}
 
 	diags = convertToTerraformModel(ctx, role, &state)
@@ -122,24 +132,6 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 }
 
-func convertToTerraformModel(ctx context.Context, role *client.RoleModel, model *RoleModel) (diags diag.Diagnostics) {
-	*model = RoleModel{
-		Id:          types.StringValue(role.ID),
-		Name:        types.StringValue(role.Name),
-		Description: types.StringValue(role.Description),
-		Type:        types.StringValue(role.Type),
-		IsDefault:   types.BoolValue(role.IsDefault),
-	}
-
-	if role.ScopeIds != nil {
-		model.ScopeIds, diags = basetypes.NewListValueFrom(ctx, types.StringType, role.ScopeIds)
-		if diags.HasError() {
-			return diags
-		}
-	}
-	return
-}
-
 func decodePlan(ctx context.Context, plan RoleModel) *client.RoleModel {
 	model := &client.RoleModel{
 		ID:          plan.Id.ValueString(),
@@ -156,12 +148,33 @@ func decodePlan(ctx context.Context, plan RoleModel) *client.RoleModel {
 	}
 
 	if !plan.ScopeIds.IsNull() && !plan.ScopeIds.IsUnknown() {
-		var scopeIDs []string
-		diags := plan.ScopeIds.ElementsAs(ctx, &scopeIDs, false)
-		if !diags.HasError() {
-			model.ScopeIds = scopeIDs
-		}
+		plan.ScopeIds.ElementsAs(ctx, &model.ScopeIds, true)
 	}
 
 	return model
+}
+
+func convertToTerraformModel(ctx context.Context, role *client.RoleModel, model *RoleModel) (diags diag.Diagnostics) {
+	*model = RoleModel{
+		Id:          types.StringValue(role.ID),
+		Name:        types.StringValue(role.Name),
+		Description: types.StringValue(role.Description),
+		Type:        types.StringValue(role.Type),
+		IsDefault:   types.BoolValue(role.IsDefault),
+	}
+
+	if role.ScopeIds == nil {
+		model.ScopeIds = types.ListNull(types.StringType)
+	} else {
+		model.ScopeIds, diags = convertList(ctx, types.StringType, role.ScopeIds)
+		if diags.HasError() {
+			return
+		}
+	}
+
+	return
+}
+
+func convertList[E any](ctx context.Context, elementType attr.Type, list []E) (basetypes.ListValue, diag.Diagnostics) {
+	return basetypes.NewListValueFrom(ctx, elementType, list)
 }
