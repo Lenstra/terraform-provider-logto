@@ -33,10 +33,8 @@ func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	if roleScopes != nil {
-		for _, scope := range roleScopes {
-			role.ScopeIds = append(role.ScopeIds, scope.ID)
-		}
+	for _, scope := range roleScopes {
+		role.ScopeIds = append(role.ScopeIds, scope.ID)
 	}
 
 	diags = convertToTerraformModel(ctx, role, &state)
