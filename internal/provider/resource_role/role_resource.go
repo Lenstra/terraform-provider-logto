@@ -6,49 +6,10 @@ import (
 
 	"github.com/Lenstra/terraform-provider-logto/client"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
-
-// Ensure the implementation satisfies the expected interfaces.
-var (
-	_ resource.Resource                = &roleResource{}
-	_ resource.ResourceWithConfigure   = &roleResource{}
-	_ resource.ResourceWithImportState = &roleResource{}
-)
-
-type roleResource struct {
-	client *client.Client
-}
-
-func RoleResource() resource.Resource {
-	return &roleResource{}
-}
-
-func (r *roleResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_role"
-}
-
-func (r *roleResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = RoleResourceSchema(ctx)
-}
-
-func (r *roleResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-	client, ok := req.ProviderData.(*client.Client)
-	if !ok {
-		return
-	}
-	r.client = client
-}
-
-func (r *roleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
-}
 
 func (r *roleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan, state RoleModel

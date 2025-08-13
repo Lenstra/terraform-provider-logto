@@ -2,66 +2,12 @@ package resource_api_resource_scope
 
 import (
 	"context"
-	"strings"
 
 	"github.com/Lenstra/terraform-provider-logto/client"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
-
-// Ensure the implementation satisfies the expected interfaces.
-var (
-	_ resource.Resource                = &apiResourceScopeResource{}
-	_ resource.ResourceWithConfigure   = &apiResourceScopeResource{}
-	_ resource.ResourceWithImportState = &apiResourceScopeResource{}
-)
-
-type apiResourceScopeResource struct {
-	client *client.Client
-}
-
-func ApiResourceScopeResource() resource.Resource {
-	return &apiResourceScopeResource{}
-}
-
-func (r *apiResourceScopeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_api_resource_scope"
-}
-
-func (r *apiResourceScopeResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = ApiResourceScopeResourceSchema(ctx)
-}
-
-func (r *apiResourceScopeResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-	client, ok := req.ProviderData.(*client.Client)
-	if !ok {
-		return
-	}
-	r.client = client
-}
-
-func (r *apiResourceScopeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.Split(req.ID, ":")
-	if len(parts) != 2 {
-		resp.Diagnostics.AddError(
-			"Unexpected Import Identifier",
-			`Expected import identifier in format "resource_id:scope_name", got "`+req.ID+`"`,
-		)
-		return
-	}
-
-	resourceId := parts[0]
-	scopeName := parts[1]
-
-	resp.State.SetAttribute(ctx, path.Root("id"), scopeName)
-	resp.State.SetAttribute(ctx, path.Root("resource_id"), resourceId)
-	resp.State.SetAttribute(ctx, path.Root("name"), scopeName)
-}
 
 func (r *apiResourceScopeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan ApiResourceScopeModel

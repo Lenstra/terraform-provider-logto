@@ -32,6 +32,9 @@ func ApiResourceResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The unique identifier of the resource.",
 				MarkdownDescription: "The unique identifier of the resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"indicator": schema.StringAttribute{
 				Required:            true,

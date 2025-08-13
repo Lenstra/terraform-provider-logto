@@ -27,6 +27,9 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The unique identifier of the role.",
 				MarkdownDescription: "The unique identifier of the role.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"is_default": schema.BoolAttribute{
 				Optional: true,
