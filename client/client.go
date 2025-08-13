@@ -235,7 +235,12 @@ func expect(codes ...int) func(*http.Response, error) (*http.Response, error) {
 			return nil, err
 		}
 		if !slices.Contains(codes, res.StatusCode) {
-			return res, fmt.Errorf("got status code %s, expected status code in %v", res.Status, codes)
+			message := fmt.Sprintf("got status code %s, expected status code in %v", res.Status, codes)
+			if res.StatusCode >= 400 {
+				content, _ := io.ReadAll(res.Body)
+				message += fmt.Sprintf(": %s", string(content))
+			}
+			return res, errors.New(message)
 		}
 		return res, nil
 	}
