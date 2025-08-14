@@ -1,3 +1,33 @@
+## 0.0.11
+
+BUG FIXES:
+
+- Fix handling of argument `cors_allowed_origins` in resource `logto_application`.
+
+## 0.0.10
+
+BUG FIXES:
+
+- Fix handling of `profile` argument in `logto_user` resource.
+
+## 0.0.9
+
+IMPROVEMENTS:
+
+- Log more information on errors when calling the API.
+
+## 0.0.8
+
+BUG FIXES:
+
+- Revert changes from v0.0.7.
+
+## 0.0.7
+
+BUG FIXES:
+
+- Fixed user creation error by handling empty profile fields correctly in state update.
+
 ## 0.0.6
 
 BUG FIXES:
