@@ -13,21 +13,17 @@ import (
 )
 
 func (r *apiResourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan ApiResourceModel
+	var plan, state ApiResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	apiResource := &client.ApiResourceModel{
-		Name:      plan.Name.ValueString(),
-		Indicator: plan.Indicator.ValueString(),
-	}
-
-	if !plan.AccessTokenTtl.IsUnknown() && !plan.AccessTokenTtl.IsNull() {
-		accessTokenTtlValue, _ := plan.AccessTokenTtl.ValueBigFloat().Float64()
-		apiResource.AccessTokenTtl = &accessTokenTtlValue
+	apiResource, diags := decodePlan(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	apiResource, err := r.client.ApiResourceCreate(ctx, apiResource)
@@ -36,10 +32,13 @@ func (r *apiResourceResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	diag := r.updateApiResourceState(apiResource, &plan)
-	resp.Diagnostics.Append(diag...)
+	diags = convertToTerraformModel(ctx, apiResource, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
@@ -57,8 +56,11 @@ func (r *apiResourceResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	diag := r.updateApiResourceState(apiResource, &state)
-	resp.Diagnostics.Append(diag...)
+	diags = convertToTerraformModel(ctx, apiResource, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -78,14 +80,10 @@ func (r *apiResourceResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	apiResource := &client.ApiResourceModel{
-		ID:   plan.Id.ValueString(),
-		Name: plan.Name.ValueString(),
-	}
-
-	if !plan.AccessTokenTtl.IsUnknown() && !plan.AccessTokenTtl.IsNull() {
-		ttl, _ := plan.AccessTokenTtl.ValueBigFloat().Float64()
-		apiResource.AccessTokenTtl = &ttl
+	apiResource, diags := decodePlan(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	apiResource, err := r.client.ApiResourceUpdate(ctx, apiResource)
@@ -94,7 +92,7 @@ func (r *apiResourceResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	diags = r.updateApiResourceState(apiResource, &state)
+	diags = convertToTerraformModel(ctx, apiResource, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -118,53 +116,115 @@ func (r *apiResourceResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 }
 
-func (r *apiResourceResource) updateApiResourceState(apiResource *client.ApiResourceModel, model *ApiResourceModel) diag.Diagnostics {
-
+func decodePlan(ctx context.Context, plan ApiResourceModel) (*client.ApiResourceModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	var scopesList []attr.Value
 
-	var ScopeAttrTypes = map[string]attr.Type{
-		"created_at":  types.NumberType,
-		"description": types.StringType,
-		"name":        types.StringType,
-		"id":          types.StringType,
-		"resource_id": types.StringType,
-		"tenant_id":   types.StringType,
+	model := &client.ApiResourceModel{
+		ID:        plan.Id.ValueString(),
+		Name:      plan.Name.ValueString(),
+		Indicator: plan.Indicator.ValueString(),
 	}
 
-	var ScopesType = types.ObjectType{
-		AttrTypes: ScopeAttrTypes,
+	isDefault := plan.IsDefault.ValueBoolPointer()
+	if isDefault == nil {
+		falseVal := false
+		isDefault = &falseVal
+	}
+	model.IsDefault = isDefault
+
+	if !plan.AccessTokenTtl.IsUnknown() && !plan.AccessTokenTtl.IsNull() {
+		accessTokenTtlValue, _ := plan.AccessTokenTtl.ValueBigFloat().Float64()
+		model.AccessTokenTtl = &accessTokenTtlValue
 	}
 
-	if apiResource.Scopes != nil {
-		for _, scope := range *apiResource.Scopes {
-			scopeObj, objDiags := types.ObjectValue(
-				ScopeAttrTypes,
-				map[string]attr.Value{
-					"created_at":  types.NumberValue(big.NewFloat(*scope.CreatedAt)),
-					"description": types.StringValue(scope.Description),
-					"name":        types.StringValue(scope.Name),
-					"id":          types.StringValue(scope.ID),
-					"resource_id": types.StringValue(scope.ResourceId),
-					"tenant_id":   types.StringValue(scope.TenantId),
-				},
-			)
-			diags.Append(objDiags...)
+	var scopesList = make([]client.ScopeModel, 0)
+	if !plan.Scopes.IsNull() && !plan.Scopes.IsUnknown() {
+		var scopes []ScopesValue
+		diags.Append(plan.Scopes.ElementsAs(ctx, &scopes, false)...)
+		if diags.HasError() {
+			return nil, diags
+		}
 
-			scopesList = append(scopesList, scopeObj)
+		for _, s := range scopes {
+			scope := client.ScopeModel{
+				TenantId:    s.TenantId.ValueString(),
+				ID:          s.Id.ValueString(),
+				ResourceId:  s.ResourceId.ValueString(),
+				Name:        s.Name.ValueString(),
+				Description: s.Description.ValueString(),
+			}
+
+			if !s.CreatedAt.IsNull() && !s.CreatedAt.IsUnknown() {
+				val, _ := s.CreatedAt.ValueBigFloat().Float64()
+				scope.CreatedAt = &val
+			}
+
+			scopesList = append(scopesList, scope)
 		}
 	}
+	model.Scopes = &scopesList
 
-	scopesListValue, listDiags := types.ListValue(ScopesType, scopesList)
+	return model, diags
+}
 
-	diags.Append(listDiags...)
+func convertToTerraformModel(ctx context.Context, apiResource *client.ApiResourceModel, model *ApiResourceModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 
-	model.AccessTokenTtl = basetypes.NumberValue(types.Float64Value(*apiResource.AccessTokenTtl))
-	model.Id = types.StringValue(apiResource.ID)
-	model.Indicator = types.StringValue(apiResource.Indicator)
-	model.IsDefault = types.BoolValue(*apiResource.IsDefault)
-	model.Name = types.StringValue(apiResource.Name)
-	model.Scopes = scopesListValue
+	*model = ApiResourceModel{
+		Id:        types.StringValue(apiResource.ID),
+		Name:      types.StringValue(apiResource.Name),
+		Indicator: types.StringValue(apiResource.Indicator),
+		IsDefault: types.BoolPointerValue(apiResource.IsDefault),
+	}
+
+	if apiResource.AccessTokenTtl != nil {
+		model.AccessTokenTtl = types.NumberValue(big.NewFloat(*apiResource.AccessTokenTtl))
+	} else {
+		model.AccessTokenTtl = types.NumberNull()
+	}
+
+	// Conversion des scopes
+	if apiResource.Scopes != nil {
+		var scopeValues []attr.Value
+
+		for _, s := range *apiResource.Scopes {
+			var createdAt basetypes.NumberValue
+			if s.CreatedAt != nil {
+				createdAt = basetypes.NewNumberValue(big.NewFloat(*s.CreatedAt))
+			} else {
+				createdAt = basetypes.NewNumberNull()
+			}
+
+			scopeValue := ScopesValue{
+				CreatedAt:   createdAt,
+				Description: basetypes.NewStringValue(s.Description),
+				Id:          basetypes.NewStringValue(s.ID),
+				Name:        basetypes.NewStringValue(s.Name),
+				ResourceId:  basetypes.NewStringValue(s.ResourceId),
+				TenantId:    basetypes.NewStringValue(s.TenantId),
+				state:       attr.ValueStateKnown,
+			}
+
+			objVal, d := scopeValue.ToObjectValue(ctx)
+			diags.Append(d...)
+			if diags.HasError() {
+				return diags
+			}
+
+			scopeValues = append(scopeValues, objVal)
+		}
+
+		listType := ScopesValue{}.Type(ctx)
+		if len(scopeValues) == 0 {
+			model.Scopes = types.ListNull(listType)
+		} else {
+			listVal, d := types.ListValue(listType, scopeValues)
+			diags.Append(d...)
+			model.Scopes = listVal
+		}
+	} else {
+		model.Scopes = types.ListNull(ScopesValue{}.Type(ctx))
+	}
 
 	return diags
 }

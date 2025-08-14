@@ -33,7 +33,7 @@ func TestApiResourceScope(t *testing.T) {
 
 	scope, err := client.ApiResourceScopeCreate(
 		ctx,
-		apiResource.ID,
+		expected.ResourceId,
 		&ScopeModel{
 			Name:        "test_scope",
 			Description: "test_scope_description",
@@ -43,46 +43,44 @@ func TestApiResourceScope(t *testing.T) {
 	require.NotEmpty(t, scope.ID)
 	require.NotEmpty(t, scope.TenantId)
 
-	scope.ID = ""
 	require.Equal(t, expected.Name, scope.Name)
 	require.Equal(t, expected.Description, scope.Description)
 
 	queryParams := map[string]string{
-		"page":      "1",
-		"page_size": "20",
-		"search":    "test_scope",
+		"includeScopes": "yes",
 	}
 
-	scopes, err := client.ApiResourceScopesGet(ctx, expected.ResourceId)
+	allApiResources, err := client.ApiResourceGetAll(ctx, queryParams)
 	require.NoError(t, err)
-	require.NotNil(t, scopes)
-	require.NotEmpty(t, scopes)
-	require.NotNil(t, (*scopes)[0].Name)
-	require.NotNil(t, (*scopes)[0].Description)
-	require.NotEmpty(t, (*scopes)[0].Name)
-	require.NotEmpty(t, (*scopes)[0].Description)
-	require.Equal(t, "test_scope", (*scopes)[0].Name)
-	require.Equal(t, "test_scope_description", (*scopes)[0].Description)
+	require.NotNil(t, allApiResources)
 
-	scopes, err = client.ApiResourceScopesGetWithParams(ctx, expected.ResourceId, queryParams)
-	require.NoError(t, err)
-	require.NotNil(t, scopes)
-	require.NotEmpty(t, scopes)
-	require.NotNil(t, (*scopes)[0].Name)
-	require.NotNil(t, (*scopes)[0].Description)
-	require.NotEmpty(t, (*scopes)[0].Description)
-	require.Equal(t, "test_scope", (*scopes)[0].Name)
-	require.Equal(t, "test_scope_description", (*scopes)[0].Description)
+	var foundScope *ScopeModel
+	for _, resource := range *allApiResources {
+		if resource.ID == apiResource.ID {
+			for _, s := range *resource.Scopes {
+				if s.ID == scope.ID {
+					foundScope = &s
+					break
+				}
+			}
+		}
+		if foundScope != nil {
+			break
+		}
+	}
 
-	scope.Name = "test_scope_update"
-	scope.Description = "test_scope_description_update"
-	scope.ID = (*scopes)[0].ID
-	scope, err = client.ApiResourceScopeUpdate(ctx, scope)
+	require.NotNil(t, foundScope)
+	require.Equal(t, "test_scope", foundScope.Name)
+	require.Equal(t, "test_scope_description", foundScope.Description)
+
+	foundScope.Name = "test_scope_update"
+	foundScope.Description = "test_scope_description_update"
+	updatedScope, err := client.ApiResourceScopeUpdate(ctx, foundScope)
 	require.NoError(t, err)
-	require.NotNil(t, scope)
-	require.NotEmpty(t, scope.ID)
-	require.Equal(t, "test_scope_update", scope.Name)
-	require.Equal(t, "test_scope_description_update", scope.Description)
+	require.NotNil(t, updatedScope)
+	require.NotEmpty(t, updatedScope.ID)
+	require.Equal(t, "test_scope_update", updatedScope.Name)
+	require.Equal(t, "test_scope_description_update", updatedScope.Description)
 
 	err = client.ApiResourceDelete(ctx, apiResource.ID)
 	require.NoError(t, err)

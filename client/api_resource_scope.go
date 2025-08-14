@@ -8,36 +8,6 @@ import (
 	"path"
 )
 
-func (c *Client) ApiResourceScopesGet(ctx context.Context, resourceId string) (*[]ScopeModel, error) {
-	return c.ApiResourceScopesGetWithParams(ctx, resourceId, nil)
-}
-
-func (c *Client) ApiResourceScopesGetWithParams(ctx context.Context, resourceId string, query_parameters map[string]string) (*[]ScopeModel, error) {
-	if resourceId == "" {
-		return nil, errEmptyID
-	}
-
-	req := &request{
-		method:           http.MethodGet,
-		path:             path.Join("api/resources", resourceId, "scopes"),
-		query_parameters: query_parameters,
-	}
-	res, err := expect(200, 404)(c.do(ctx, req))
-	if err != nil {
-		return nil, err
-	}
-
-	if res.StatusCode == 404 {
-		return nil, nil
-	}
-
-	var scopes []ScopeModel
-	if err := decode(res.Body, &scopes); err != nil {
-		return nil, err
-	}
-	return &scopes, nil
-}
-
 func (c *Client) ApiResourceScopeCreate(ctx context.Context, resourceId string, scope *ScopeModel) (*ScopeModel, error) {
 	req := &request{
 		method: http.MethodPost,
@@ -73,6 +43,10 @@ func (c *Client) ApiResourceScopeDelete(ctx context.Context, resourceId string, 
 }
 
 func (c *Client) ApiResourceScopeUpdate(ctx context.Context, scope *ScopeModel) (*ScopeModel, error) {
+	if scope.ResourceId == "" || scope.ID == "" {
+		return nil, errEmptyID
+	}
+
 	req := &request{
 		method: http.MethodPatch,
 		path:   path.Join("api/resources", scope.ResourceId, "scopes", scope.ID),

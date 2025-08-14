@@ -31,6 +31,24 @@ func (c *Client) ApiResourceGet(ctx context.Context, id string) (*ApiResourceMod
 	return &apiResource, nil
 }
 
+func (c *Client) ApiResourceGetAll(ctx context.Context, query_params map[string]string) (*[]ApiResourceModel, error) {
+	req := &request{
+		method:           http.MethodGet,
+		path:             path.Join("api/resources"),
+		query_parameters: query_params,
+	}
+	res, err := expect(200)(c.do(ctx, req))
+	if err != nil {
+		return nil, err
+	}
+
+	var apiResources []ApiResourceModel
+	if err := decode(res.Body, &apiResources); err != nil {
+		return nil, err
+	}
+	return &apiResources, nil
+}
+
 func (c *Client) ApiResourceCreate(ctx context.Context, apiResource *ApiResourceModel) (*ApiResourceModel, error) {
 	req := &request{
 		method: http.MethodPost,

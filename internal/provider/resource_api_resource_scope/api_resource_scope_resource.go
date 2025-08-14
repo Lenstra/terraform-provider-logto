@@ -2,6 +2,7 @@ package resource_api_resource_scope
 
 import (
 	"context"
+	"math/big"
 
 	"github.com/Lenstra/terraform-provider-logto/client"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -10,21 +11,14 @@ import (
 )
 
 func (r *apiResourceScopeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan ApiResourceScopeModel
+	var plan, state ApiResourceScopeModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	apiResourceScope := &client.ScopeModel{
-		ResourceId: plan.ResourceId.ValueString(),
-		Name:       plan.Name.ValueString(),
-	}
-
-	if !plan.Description.IsUnknown() && !plan.Description.IsNull() {
-		apiResourceScope.Description = plan.Description.ValueString()
-	}
+	apiResourceScope := decodePlan(plan)
 
 	apiResourceScope, err := r.client.ApiResourceScopeCreate(ctx, apiResourceScope.ResourceId, apiResourceScope)
 	if err != nil {
@@ -32,9 +26,9 @@ func (r *apiResourceScopeResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	r.updateApiResourceScopeState(apiResourceScope, &plan)
+	convertToTerraformModel(apiResourceScope, &state)
 
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
@@ -47,34 +41,42 @@ func (r *apiResourceScopeResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	queryParams := map[string]string{
-		"page":      "1",  // Keep defaults
-		"page_size": "20", // Keep defaults
-	}
-
-	if !state.Name.IsUnknown() && !state.Name.IsNull() {
-		queryParams["search"] = state.Name.ValueString()
-	}
-
-	if state.ResourceId.IsNull() || state.ResourceId.IsUnknown() {
-		resp.Diagnostics.AddError("Invalid Resource ID", "ResourceId is null or unknown.")
+	if state.Id.IsNull() || state.Id.IsUnknown() {
+		resp.Diagnostics.AddError("Invalid Id", "Resource Id is null or unknown.")
 		return
 	}
 
-	apiResourceScopes, err := r.client.ApiResourceScopesGetWithParams(ctx, state.ResourceId.ValueString(), queryParams)
+	queryParams := map[string]string{
+		"includeScopes": "yes",
+		"page":          "1",  // Keep defaults
+		"page_size":     "20", // Keep defaults
+	}
+
+	// Get scope
+	apiResources, err := r.client.ApiResourceGetAll(ctx, queryParams)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading api_resource_scope", err.Error())
 		return
 	}
 
-	if len(*apiResourceScopes) > 1 {
-		resp.Diagnostics.AddError("Error reading api_resource_scope",
-			"The API returned more than one result. Expected only one result for the query.")
+	// Get all ApiResource, then filter them because the Logto API does not provide a way
+	// to directly GET the API_Resource with its Scopes. Generally, Scopes and API_Resources are few,
+	// so just get all and filter to find the one we need.
+	var resourceScope *client.ScopeModel
+	for _, resource := range *apiResources {
+		for _, scope := range *resource.Scopes {
+			if scope.ID == state.Id.ValueString() {
+				resourceScope = &scope
+			}
+		}
+	}
+
+	if resourceScope == nil {
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
-	apiResourceScope := (*apiResourceScopes)[0]
-	r.updateApiResourceScopeState(&apiResourceScope, &state)
+	convertToTerraformModel(resourceScope, &state)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -94,23 +96,15 @@ func (r *apiResourceScopeResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	apiResourceScope := &client.ScopeModel{
-		ResourceId: state.ResourceId.ValueString(),
-		ID:         state.Id.ValueString(),
-		Name:       plan.Name.ValueString(),
-	}
+	apiResourceScope := decodePlan(plan)
 
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		apiResourceScope.Description = plan.Description.ValueString()
-	}
-
-	scope, err := r.client.ApiResourceScopeUpdate(ctx, apiResourceScope)
+	apiResourceScope, err := r.client.ApiResourceScopeUpdate(ctx, apiResourceScope)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating api_resource_scope", err.Error())
 		return
 	}
 
-	r.updateApiResourceScopeState(scope, &state)
+	convertToTerraformModel(apiResourceScope, &state)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -130,13 +124,35 @@ func (r *apiResourceScopeResource) Delete(ctx context.Context, req resource.Dele
 	}
 }
 
-func (r *apiResourceScopeResource) updateApiResourceScopeState(scope *client.ScopeModel, model *ApiResourceScopeModel) {
+func decodePlan(plan ApiResourceScopeModel) *client.ScopeModel {
+	model := &client.ScopeModel{
+		ID:          plan.Id.ValueString(),
+		TenantId:    plan.TenantId.ValueString(),
+		Name:        plan.Name.ValueString(),
+		Description: plan.Description.ValueString(),
+		ResourceId:  plan.ResourceId.ValueString(),
+	}
 
-	model.TenantId = types.StringValue(scope.TenantId)
-	model.Id = types.StringValue(scope.ID)
-	model.ResourceId = types.StringValue(scope.ResourceId)
-	model.Name = types.StringValue(scope.Name)
-	model.Description = types.StringValue(scope.Description)
-	model.CreatedAt = basetypes.NumberValue(types.Float64Value(*scope.CreatedAt))
+	if !plan.CreatedAt.IsNull() && !plan.CreatedAt.IsUnknown() {
+		createdAtBigFloat := plan.CreatedAt.ValueBigFloat()
+		f, _ := createdAtBigFloat.Float64()
+		model.CreatedAt = &f
+	}
 
+	return model
+}
+
+func convertToTerraformModel(apiResourceScope *client.ScopeModel, model *ApiResourceScopeModel) {
+	*model = ApiResourceScopeModel{
+		Id:          types.StringValue(apiResourceScope.ID),
+		TenantId:    types.StringValue(apiResourceScope.TenantId),
+		Name:        types.StringValue(apiResourceScope.Name),
+		Description: types.StringValue(apiResourceScope.Description),
+		ResourceId:  types.StringValue(apiResourceScope.ResourceId),
+	}
+
+	if apiResourceScope.CreatedAt != nil {
+		createdAtBigFloat := new(big.Float).SetFloat64(*apiResourceScope.CreatedAt)
+		model.CreatedAt = basetypes.NewNumberValue(createdAtBigFloat)
+	}
 }
