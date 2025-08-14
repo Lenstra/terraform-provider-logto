@@ -3,58 +3,11 @@ package resource_sign_in_experience
 import (
 	"context"
 
-	"github.com/Lenstra/terraform-provider-logto/client"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
-
-// Ensure the implementation satisfies the expected interfaces.
-var (
-	_ resource.Resource                = &signInExperienceResource{}
-	_ resource.ResourceWithConfigure   = &signInExperienceResource{}
-	_ resource.ResourceWithImportState = &signInExperienceResource{}
-)
-
-type signInExperienceResource struct {
-	client *client.Client
-}
-
-func SignInExperienceResource() resource.Resource {
-	return &signInExperienceResource{}
-}
-
-func (r *signInExperienceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_sign_in_experience"
-}
-
-func (r *signInExperienceResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = SignInExperienceResourceSchema(ctx)
-}
-
-func (r *signInExperienceResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-	client, ok := req.ProviderData.(*client.Client)
-	if !ok {
-		return
-	}
-	r.client = client
-}
-
-func (r *signInExperienceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
-
-	r.Read(ctx, resource.ReadRequest{
-		State: resp.State,
-	}, &resource.ReadResponse{
-		Diagnostics: resp.Diagnostics,
-		State:       resp.State,
-	})
-}
 
 func (r *signInExperienceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan SignInExperienceModel

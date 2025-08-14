@@ -203,7 +203,19 @@
 					{
 						"name": "id",
 						"string": {
-							"computed_optional_required": "computed"
+							"computed_optional_required": "computed",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.UseStateForUnknown()"
+									}
+								}
+							]
 						}
 					},
 					{
@@ -227,6 +239,7 @@
 					{
 						"name": "branding",
 						"single_nested": {
+							"computed_optional_required": "computed_optional",
 							"attributes": [
 								{
 									"name": "dark_favicon",
@@ -252,33 +265,32 @@
 										"computed_optional_required": "computed_optional"
 									}
 								}
-							],
-							"computed_optional_required": "computed_optional"
+							]
 						}
 					},
 					{
 						"name": "captcha_policy",
 						"single_nested": {
+							"computed_optional_required": "computed_optional",
 							"attributes": [
 								{
+									"name": "enabled",
 									"bool": {
 										"computed_optional_required": "computed_optional"
-									},
-									"name": "enabled"
+									}
 								}
-							],
-							"computed_optional_required": "computed_optional"
+							]
 						}
 					},
 					{
+						"name": "custom_content",
 						"map": {
 							"computed_optional_required": "computed_optional",
-							"description": "Custom content to display on experience flow pages. the page pathname will be the config key, the content will be the config value.",
 							"element_type": {
 								"string": {}
-							}
-						},
-						"name": "custom_content"
+							},
+							"description": "Custom content to display on experience flow pages. the page pathname will be the config key, the content will be the config value."
+						}
 					},
 					{
 						"name": "custom_css",
@@ -289,12 +301,13 @@
 					{
 						"name": "language_info",
 						"single_nested": {
+							"computed_optional_required": "computed_optional",
 							"attributes": [
 								{
+									"name": "auto_detect",
 									"bool": {
 										"computed_optional_required": "computed_optional"
-									},
-									"name": "auto_detect"
+									}
 								},
 								{
 									"name": "fallback_language",
@@ -315,22 +328,22 @@
 									}
 								}
 							],
-							"computed_optional_required": "computed_optional",
 							"description": "Control the language detection policy for the sign-in page."
 						}
 					},
 					{
 						"name": "mfa",
 						"single_nested": {
+							"computed_optional_required": "computed_optional",
 							"attributes": [
 								{
+									"name": "factors",
 									"list": {
 										"computed_optional_required": "computed_optional",
 										"element_type": {
 											"string": {}
 										}
-									},
-									"name": "factors"
+									}
 								},
 								{
 									"name": "organization_required_mfa_policy",
@@ -369,17 +382,18 @@
 									}
 								}
 							],
-							"computed_optional_required": "computed_optional",
 							"description": "MFA settings"
 						}
 					},
 					{
 						"name": "password_policy",
 						"single_nested": {
+							"computed_optional_required": "computed_optional",
 							"attributes": [
 								{
 									"name": "character_types",
 									"single_nested": {
+										"computed_optional_required": "computed_optional",
 										"attributes": [
 											{
 												"name": "min",
@@ -387,13 +401,13 @@
 													"computed_optional_required": "computed_optional"
 												}
 											}
-										],
-										"computed_optional_required": "computed_optional"
+										]
 									}
 								},
 								{
 									"name": "length",
 									"single_nested": {
+										"computed_optional_required": "computed_optional",
 										"attributes": [
 											{
 												"name": "max",
@@ -407,62 +421,61 @@
 													"computed_optional_required": "computed_optional"
 												}
 											}
-										],
-										"computed_optional_required": "computed_optional"
+										]
 									}
 								},
 								{
 									"name": "rejects",
 									"single_nested": {
+										"computed_optional_required": "computed_optional",
 										"attributes": [
 											{
+												"name": "pwned",
 												"bool": {
 													"computed_optional_required": "computed_optional",
 													"default": {
 														"static": true
 													}
-												},
-												"name": "pwned"
+												}
 											},
 											{
+												"name": "repetition_and_sequence",
 												"bool": {
 													"computed_optional_required": "computed_optional",
 													"default": {
 														"static": true
 													}
-												},
-												"name": "repetition_and_sequence"
+												}
 											},
 											{
+												"name": "user_info",
 												"bool": {
 													"computed_optional_required": "computed_optional",
 													"default": {
 														"static": true
 													}
-												},
-												"name": "user_info"
+												}
 											},
 											{
+												"name": "words",
 												"list": {
 													"computed_optional_required": "computed_optional",
 													"element_type": {
 														"string": {}
 													}
-												},
-												"name": "words"
+												}
 											}
-										],
-										"computed_optional_required": "computed_optional"
+										]
 									}
 								}
 							],
-							"computed_optional_required": "computed_optional",
 							"description": "Password policies to adjust the password strength requirements."
 						}
 					},
 					{
 						"name": "sentinel_policy",
 						"single_nested": {
+							"computed_optional_required": "computed_optional",
 							"attributes": [
 								{
 									"name": "lockout_duration",
@@ -477,7 +490,6 @@
 									}
 								}
 							],
-							"computed_optional_required": "computed_optional",
 							"description": "Custom sentinel policy settings. Use this field to customize the user lockout policy. The default value is 100 failed attempts within one hour. The user will be locked out for 60 minutes after exceeding the limit."
 						}
 					},
@@ -500,34 +512,34 @@
 						}
 					},
 					{
+						"name": "single_sign_on_enabled",
 						"bool": {
-							"computed_optional_required": "computed_optional"
-						},
-						"name": "single_sign_on_enabled"
-					},
-					{
-						"name": "social_sign_in",
-						"single_nested": {
-							"attributes": [
-								{
-									"bool": {
-										"computed_optional_required": "computed_optional"
-									},
-									"name": "automatic_account_linking"
-								}
-							],
 							"computed_optional_required": "computed_optional"
 						}
 					},
 					{
+						"name": "social_sign_in",
+						"single_nested": {
+							"computed_optional_required": "computed_optional",
+							"attributes": [
+								{
+									"name": "automatic_account_linking",
+									"bool": {
+										"computed_optional_required": "computed_optional"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "social_sign_in_connector_targets",
 						"list": {
 							"computed_optional_required": "computed_optional",
-							"description": "Specify the social sign-in connectors to display on the sign-in page.",
 							"element_type": {
 								"string": {}
-							}
-						},
-						"name": "social_sign_in_connector_targets"
+							},
+							"description": "Specify the social sign-in connectors to display on the sign-in page."
+						}
 					},
 					{
 						"name": "tenant_id",
@@ -550,32 +562,32 @@
 					{
 						"name": "email_blocklist_policy",
 						"single_nested": {
+							"computed_optional_required": "computed_optional",
 							"attributes": [
 								{
+									"name": "block_disposable_addresses",
 									"bool": {
 										"computed_optional_required": "computed_optional"
-									},
-									"name": "block_disposable_addresses"
+									}
 								},
 								{
+									"name": "block_subaddressing",
 									"bool": {
 										"computed_optional_required": "computed_optional",
 										"description": "Whether to block sub-addresses. (E.g., example+shopping@test.com)"
-									},
-									"name": "block_subaddressing"
+									}
 								},
 								{
+									"name": "custom_blocklist",
 									"list": {
 										"computed_optional_required": "computed_optional",
-										"description": "Custom blocklist of email addresses or domains.",
 										"element_type": {
 											"string": {}
-										}
-									},
-									"name": "custom_blocklist"
+										},
+										"description": "Custom blocklist of email addresses or domains."
+									}
 								}
 							],
-							"computed_optional_required": "computed_optional",
 							"description": "Define email restriction policies. Users will be prohibited from registering or linking any email addresses that are included in the blocklist."
 						}
 					},
@@ -600,6 +612,7 @@
 					{
 						"name": "color",
 						"single_nested": {
+							"computed_optional_required": "computed_optional",
 							"attributes": [
 								{
 									"name": "dark_primary_color",
@@ -623,10 +636,10 @@
 									}
 								},
 								{
+									"name": "is_dark_mode_enabled",
 									"bool": {
 										"computed_optional_required": "computed_optional"
-									},
-									"name": "is_dark_mode_enabled"
+									}
 								},
 								{
 									"name": "primary_color",
@@ -650,7 +663,6 @@
 									}
 								}
 							],
-							"computed_optional_required": "computed_optional",
 							"description": "Specify the primary branding color for the sign-in page (both light/dark mode)."
 						}
 					},
@@ -675,8 +687,10 @@
 					{
 						"name": "sign_in",
 						"single_nested": {
+							"computed_optional_required": "computed_optional",
 							"attributes": [
 								{
+									"name": "methods",
 									"list_nested": {
 										"computed_optional_required": "computed_optional",
 										"nested_object": {
@@ -700,57 +714,57 @@
 													}
 												},
 												{
+													"name": "is_password_primary",
 													"bool": {
 														"computed_optional_required": "computed_optional"
-													},
-													"name": "is_password_primary"
+													}
 												},
 												{
+													"name": "password",
 													"bool": {
 														"computed_optional_required": "computed_optional"
-													},
-													"name": "password"
+													}
 												},
 												{
+													"name": "verification_code",
 													"bool": {
 														"computed_optional_required": "computed_optional"
-													},
-													"name": "verification_code"
+													}
 												}
 											]
 										}
-									},
-									"name": "methods"
+									}
 								}
 							],
-							"computed_optional_required": "computed_optional",
 							"description": "Sign-in method settings"
 						}
 					},
 					{
 						"name": "sign_up",
 						"single_nested": {
+							"computed_optional_required": "computed_optional",
 							"attributes": [
 								{
+									"name": "identifiers",
 									"list": {
 										"computed_optional_required": "computed_optional",
-										"description": "Specify allowed identifiers when signing-up.",
 										"element_type": {
 											"string": {}
-										}
-									},
-									"name": "identifiers"
+										},
+										"description": "Specify allowed identifiers when signing-up."
+									}
 								},
 								{
+									"name": "password",
 									"bool": {
 										"computed_optional_required": "computed_optional",
 										"description": "Whether the user is required to set a password when signing-up."
-									},
-									"name": "password"
+									}
 								},
 								{
 									"name": "secondary_identifiers",
 									"single_nested": {
+										"computed_optional_required": "computed_optional",
 										"attributes": [
 											{
 												"name": "identifier",
@@ -760,25 +774,23 @@
 												}
 											},
 											{
+												"name": "verify",
 												"bool": {
 													"computed_optional_required": "computed_optional"
-												},
-												"name": "verify"
+												}
 											}
 										],
-										"computed_optional_required": "computed_optional",
 										"description": "Additional identifiers required during sign-up."
 									}
 								},
 								{
+									"name": "verify",
 									"bool": {
 										"computed_optional_required": "computed_optional",
 										"description": "Whether the user is required to verify their email/phone when signing-up."
-									},
-									"name": "verify"
+									}
 								}
 							],
-							"computed_optional_required": "computed_optional",
 							"description": "Sign-up method settings"
 						}
 					},
