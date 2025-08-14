@@ -137,10 +137,8 @@ func decodePlan(ctx context.Context, plan ApiResourceModel) (*client.ApiResource
 	}
 	model.IsDefault = isDefault
 
-	if !plan.AccessTokenTtl.IsUnknown() && !plan.AccessTokenTtl.IsNull() {
-		accessTokenTtlValue, _ := plan.AccessTokenTtl.ValueBigFloat().Float64()
-		model.AccessTokenTtl = &accessTokenTtlValue
-	}
+	accessTokenTtlValue, _ := plan.AccessTokenTtl.ValueBigFloat().Float64()
+	model.AccessTokenTtl = &accessTokenTtlValue
 
 	var scopesList = make([]client.ScopeModel, 0)
 	if !plan.Scopes.IsNull() && !plan.Scopes.IsUnknown() {
@@ -189,9 +187,9 @@ func convertToTerraformModel(ctx context.Context, apiResource *client.ApiResourc
 	}
 
 	// Conversion des scopes
-	if apiResource.Scopes != nil {
-		var scopeValues []attr.Value
+	var scopeValues []attr.Value
 
+	if apiResource.Scopes != nil {
 		for _, s := range *apiResource.Scopes {
 			var createdAt basetypes.NumberValue
 			if s.CreatedAt != nil {
@@ -218,18 +216,12 @@ func convertToTerraformModel(ctx context.Context, apiResource *client.ApiResourc
 
 			scopeValues = append(scopeValues, objVal)
 		}
-
-		listType := ScopesValue{}.Type(ctx)
-		if len(scopeValues) == 0 {
-			model.Scopes = types.ListNull(listType)
-		} else {
-			listVal, d := types.ListValue(listType, scopeValues)
-			diags.Append(d...)
-			model.Scopes = listVal
-		}
-	} else {
-		model.Scopes = types.ListNull(ScopesValue{}.Type(ctx))
 	}
+
+	listType := ScopesValue{}.Type(ctx)
+	listVal, d := types.ListValue(listType, scopeValues)
+	diags.Append(d...)
+	model.Scopes = listVal
 
 	return diags
 }

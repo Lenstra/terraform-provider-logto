@@ -67,6 +67,26 @@
 			"schema": {
 				"attributes": [
 					{
+						"name": "access_token_ttl",
+						"number": {
+							"computed_optional_required": "computed_optional",
+							"description": "The access token TTL in seconds. It affects the `exp` claim of the access token granted for this resource.",
+							"default": {
+								"custom": {
+									"imports": [
+										{
+											"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/numberdefault"
+										},
+										{
+											"path": "math/big"
+										}
+									],
+									"schema_definition": "numberdefault.StaticBigFloat(big.NewFloat(3600))"
+								}
+							}
+						}
+					},
+					{
 						"name": "indicator",
 						"string": {
 							"computed_optional_required": "required",

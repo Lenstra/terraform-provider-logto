@@ -8,12 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/numberdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"math/big"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -27,6 +29,7 @@ func ApiResourceResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The access token TTL in seconds. It affects the `exp` claim of the access token granted for this resource.",
 				MarkdownDescription: "The access token TTL in seconds. It affects the `exp` claim of the access token granted for this resource.",
+				Default:             numberdefault.StaticBigFloat(big.NewFloat(3600)),
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,

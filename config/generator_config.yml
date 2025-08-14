@@ -83,6 +83,7 @@ resources:
       ignores:
         - tenantId
         - indicator
+        - accessTokenTtl
   api_resource_scope:
     read:
       path: /api/resources/{resourceId}/scopes
