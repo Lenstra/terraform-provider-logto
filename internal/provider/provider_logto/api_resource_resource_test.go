@@ -20,12 +20,10 @@ func TestAccApiResourceResource(t *testing.T) {
 							}
 							`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify attributes
 					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "name", "tf_test_api_resource"),
 					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "indicator", "https://test-api-resource.test"),
 					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "access_token_ttl", "3600"),
 
-					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("logto_api_resource.test_api_resource", "id"),
 				),
 			},
@@ -50,7 +48,6 @@ func TestAccApiResourceResource(t *testing.T) {
 					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "indicator", "https://test-api-resource-modified.test"),
 					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "access_token_ttl", "4000"),
 
-					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("logto_api_resource.test_api_resource", "id"),
 				),
 			},
@@ -72,11 +69,9 @@ func TestAccApiResourceResourceModifyingIndicator(t *testing.T) {
 							}
 							`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify attributes
 					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "name", "tf_test_api_resource"),
 					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "indicator", "https://test-api-resource.test"),
 
-					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("logto_api_resource.test_api_resource", "id"),
 				),
 			},
@@ -95,11 +90,9 @@ func TestAccApiResourceResourceModifyingIndicator(t *testing.T) {
 							}
 							`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify attributes
 					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "name", "tf_test_api_resource modified"),
 					resource.TestCheckResourceAttr("logto_api_resource.test_api_resource", "indicator", "https://test-api-resource-modified.test"),
 
-					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("logto_api_resource.test_api_resource", "id"),
 				),
 			},
