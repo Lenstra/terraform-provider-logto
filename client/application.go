@@ -2,8 +2,8 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"net/http"
-	"path"
 )
 
 func (c *Client) ApplicationGet(ctx context.Context, id string) (*ApplicationModel, error) {
@@ -13,7 +13,7 @@ func (c *Client) ApplicationGet(ctx context.Context, id string) (*ApplicationMod
 
 	req := &request{
 		method: http.MethodGet,
-		path:   path.Join("api/applications", id),
+		path:   "api/applications/" + id,
 	}
 	res, err := expect(200, 404)(c.do(ctx, req))
 	if err != nil {
@@ -57,7 +57,7 @@ func (c *Client) ApplicationDelete(ctx context.Context, id string) error {
 
 	req := &request{
 		method: http.MethodDelete,
-		path:   path.Join("api/applications", id),
+		path:   "api/applications/" + id,
 	}
 	_, err := expect(204)(c.do(ctx, req))
 	return err
@@ -70,7 +70,7 @@ func (c *Client) ApplicationUpdate(ctx context.Context, app *ApplicationModel) (
 
 	req := &request{
 		method: http.MethodPatch,
-		path:   path.Join("api/applications", app.ID),
+		path:   "api/applications/" + app.ID,
 		body:   app,
 	}
 
@@ -93,7 +93,7 @@ func (c *Client) GetApplicationSecrets(ctx context.Context, id string) ([]Secret
 
 	req := &request{
 		method: http.MethodGet,
-		path:   path.Join("api/applications", id, "secrets"),
+		path:   fmt.Sprintf("api/applications/%s/secrets", id),
 	}
 
 	res, err := expect(200)(c.do(ctx, req))
