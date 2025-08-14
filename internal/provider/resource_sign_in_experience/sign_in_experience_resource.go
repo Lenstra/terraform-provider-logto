@@ -10,14 +10,14 @@ import (
 )
 
 func (r *signInExperienceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan SignInExperienceModel
+	var plan, state SignInExperienceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	signInExperienceModel, diags := NewSignInExperienceBuilder(ctx).FromTfModel(&plan)
+	signInExperienceModel, diags := NewSignInExperienceBuilder(ctx).FromTfPlan(&plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -29,13 +29,13 @@ func (r *signInExperienceResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	diags = r.updateSignInExperienceState(ctx, signInExperienceModel, &plan)
+	diags = convertToTerraformModel(ctx, signInExperienceModel, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	diags = resp.State.Set(ctx, &plan)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
@@ -53,7 +53,7 @@ func (r *signInExperienceResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	diags = r.updateSignInExperienceState(ctx, signInExperience, &state)
+	diags = convertToTerraformModel(ctx, signInExperience, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -77,7 +77,7 @@ func (r *signInExperienceResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	signInExperienceModel, diags := NewSignInExperienceBuilder(ctx).FromTfModel(&plan)
+	signInExperienceModel, diags := NewSignInExperienceBuilder(ctx).FromTfPlan(&plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -89,13 +89,13 @@ func (r *signInExperienceResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	diags = r.updateSignInExperienceState(ctx, signInExperienceModel, &plan)
+	diags = convertToTerraformModel(ctx, signInExperienceModel, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 

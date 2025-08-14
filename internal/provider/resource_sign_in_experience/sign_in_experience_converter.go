@@ -11,41 +11,43 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-func (r *signInExperienceResource) updateSignInExperienceState(ctx context.Context, apiModel *client.SignInExperienceModel, tfModel *SignInExperienceModel) diag.Diagnostics {
+func convertToTerraformModel(ctx context.Context, signInExperience *client.SignInExperienceModel, model *SignInExperienceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	tfModel.Id = types.StringValue(apiModel.ID)
-	tfModel.TenantId = types.StringValue(apiModel.TenantId)
-	tfModel.TermsOfUseUrl = types.StringValue(apiModel.TermsOfUseUrl)
-	tfModel.PrivacyPolicyUrl = types.StringValue(apiModel.PrivacyPolicyUrl)
-	tfModel.AgreeToTermsPolicy = types.StringValue(apiModel.AgreeToTermsPolicy)
-	tfModel.SignInMode = types.StringValue(apiModel.SignInMode)
-	tfModel.CustomCss = types.StringValue(apiModel.CustomCss)
-	tfModel.SingleSignOnEnabled = types.BoolValue(apiModel.SingleSignOnEnabled)
-	tfModel.SupportEmail = types.StringValue(apiModel.SupportEmail)
-	tfModel.SupportWebsiteUrl = types.StringValue(apiModel.SupportWebsiteUrl)
-	tfModel.UnknownSessionRedirectUrl = types.StringValue(apiModel.UnknownSessionRedirectUrl)
+	*model = SignInExperienceModel{
+		Id:                        types.StringValue(signInExperience.ID),
+		TenantId:                  types.StringValue(signInExperience.TenantId),
+		TermsOfUseUrl:             types.StringValue(signInExperience.TermsOfUseUrl),
+		PrivacyPolicyUrl:          types.StringValue(signInExperience.PrivacyPolicyUrl),
+		AgreeToTermsPolicy:        types.StringValue(signInExperience.AgreeToTermsPolicy),
+		SignInMode:                types.StringValue(signInExperience.SignInMode),
+		CustomCss:                 types.StringValue(signInExperience.CustomCss),
+		SingleSignOnEnabled:       types.BoolValue(signInExperience.SingleSignOnEnabled),
+		SupportEmail:              types.StringValue(signInExperience.SupportEmail),
+		SupportWebsiteUrl:         types.StringValue(signInExperience.SupportWebsiteUrl),
+		UnknownSessionRedirectUrl: types.StringValue(signInExperience.UnknownSessionRedirectUrl),
+	}
 
-	diags.Append(r.updateCustomContentState(apiModel.CustomContent, tfModel)...)
-	diags.Append(r.updateSignInMethodsState(ctx, apiModel.SignIn, tfModel)...)
+	diags.Append(convertCustomContent(signInExperience.CustomContent, model)...)
+	diags.Append(convertSignInMethods(ctx, signInExperience.SignIn, model)...)
 
-	r.updateBrandingState(ctx, apiModel.Branding, tfModel)
-	r.updateCaptchaPolicyState(ctx, apiModel.CaptchaPolicy, tfModel)
-	r.updateColorState(ctx, apiModel.Color, tfModel)
-	r.updateEmailBlocklistPolicyState(ctx, apiModel.EmailBlocklistPolicy, tfModel)
-	r.updateLanguageInfoState(ctx, apiModel.LanguageInfo, tfModel)
-	r.updateMfaState(ctx, apiModel.Mfa, tfModel)
-	r.updatePasswordPolicyState(ctx, apiModel.PasswordPolicy, tfModel)
-	r.updateSentinelPolicyState(ctx, apiModel.SentinelPolicy, tfModel)
-	r.updateSignUpState(ctx, apiModel.SignUp, tfModel)
-	r.updateSocialSignInState(ctx, apiModel.SocialSignIn, tfModel)
+	convertBranding(ctx, signInExperience.Branding, model)
+	convertCaptchaPolicy(ctx, signInExperience.CaptchaPolicy, model)
+	convertColor(ctx, signInExperience.Color, model)
+	convertEmailBlocklistPolicy(ctx, signInExperience.EmailBlocklistPolicy, model)
+	convertLanguageInfo(ctx, signInExperience.LanguageInfo, model)
+	convertMfa(ctx, signInExperience.Mfa, model)
+	convertPasswordPolicy(ctx, signInExperience.PasswordPolicy, model)
+	convertSentinelPolicy(ctx, signInExperience.SentinelPolicy, model)
+	convertSignUp(ctx, signInExperience.SignUp, model)
+	convertSocialSignIn(ctx, signInExperience.SocialSignIn, model)
 
-	tfModel.SocialSignInConnectorTargets = stringSliceToList(apiModel.SocialSignInConnectorTargets)
+	model.SocialSignInConnectorTargets = stringSliceToList(signInExperience.SocialSignInConnectorTargets)
 
 	return diags
 }
 
-func (r *signInExperienceResource) updateBrandingState(ctx context.Context, apiBranding *client.Branding, tfModel *SignInExperienceModel) {
+func convertBranding(ctx context.Context, apiBranding *client.Branding, tfModel *SignInExperienceModel) {
 	if apiBranding != nil {
 		tfModel.Branding = NewBrandingValueMust(
 			BrandingValue{}.AttributeTypes(ctx),
@@ -61,7 +63,7 @@ func (r *signInExperienceResource) updateBrandingState(ctx context.Context, apiB
 	}
 }
 
-func (r *signInExperienceResource) updateCaptchaPolicyState(ctx context.Context, apiCaptchaPolicy *client.CaptchaPolicy, tfModel *SignInExperienceModel) {
+func convertCaptchaPolicy(ctx context.Context, apiCaptchaPolicy *client.CaptchaPolicy, tfModel *SignInExperienceModel) {
 	if apiCaptchaPolicy != nil {
 		tfModel.CaptchaPolicy = NewCaptchaPolicyValueMust(
 			CaptchaPolicyValue{}.AttributeTypes(ctx),
@@ -74,7 +76,7 @@ func (r *signInExperienceResource) updateCaptchaPolicyState(ctx context.Context,
 	}
 }
 
-func (r *signInExperienceResource) updateColorState(ctx context.Context, apiColor *client.Color, tfModel *SignInExperienceModel) {
+func convertColor(ctx context.Context, apiColor *client.Color, tfModel *SignInExperienceModel) {
 	if apiColor != nil {
 		tfModel.Color = NewColorValueMust(
 			ColorValue{}.AttributeTypes(ctx),
@@ -89,7 +91,7 @@ func (r *signInExperienceResource) updateColorState(ctx context.Context, apiColo
 	}
 }
 
-func (r *signInExperienceResource) updateCustomContentState(apiCustomContent map[string]string, tfModel *SignInExperienceModel) diag.Diagnostics {
+func convertCustomContent(apiCustomContent map[string]string, tfModel *SignInExperienceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 	if len(apiCustomContent) > 0 {
 		elements := make(map[string]attr.Value)
@@ -103,7 +105,7 @@ func (r *signInExperienceResource) updateCustomContentState(apiCustomContent map
 	return diags
 }
 
-func (r *signInExperienceResource) updateEmailBlocklistPolicyState(ctx context.Context, apiEmailBlocklistPolicy *client.EmailBlocklistPolicy, tfModel *SignInExperienceModel) {
+func convertEmailBlocklistPolicy(ctx context.Context, apiEmailBlocklistPolicy *client.EmailBlocklistPolicy, tfModel *SignInExperienceModel) {
 	if apiEmailBlocklistPolicy != nil {
 		tfModel.EmailBlocklistPolicy = NewEmailBlocklistPolicyValueMust(
 			EmailBlocklistPolicyValue{}.AttributeTypes(ctx),
@@ -118,7 +120,7 @@ func (r *signInExperienceResource) updateEmailBlocklistPolicyState(ctx context.C
 	}
 }
 
-func (r *signInExperienceResource) updateLanguageInfoState(ctx context.Context, apiLanguageInfo *client.LanguageInfo, tfModel *SignInExperienceModel) {
+func convertLanguageInfo(ctx context.Context, apiLanguageInfo *client.LanguageInfo, tfModel *SignInExperienceModel) {
 	if apiLanguageInfo != nil {
 		tfModel.LanguageInfo = NewLanguageInfoValueMust(
 			LanguageInfoValue{}.AttributeTypes(ctx),
@@ -132,7 +134,7 @@ func (r *signInExperienceResource) updateLanguageInfoState(ctx context.Context, 
 	}
 }
 
-func (r *signInExperienceResource) updateMfaState(ctx context.Context, apiMfa *client.Mfa, tfModel *SignInExperienceModel) {
+func convertMfa(ctx context.Context, apiMfa *client.Mfa, tfModel *SignInExperienceModel) {
 	if apiMfa != nil {
 		tfModel.Mfa = NewMfaValueMust(
 			MfaValue{}.AttributeTypes(ctx),
@@ -147,11 +149,11 @@ func (r *signInExperienceResource) updateMfaState(ctx context.Context, apiMfa *c
 	}
 }
 
-func (r *signInExperienceResource) updatePasswordPolicyState(ctx context.Context, apiPasswordPolicy *client.PasswordPolicy, tfModel *SignInExperienceModel) {
+func convertPasswordPolicy(ctx context.Context, apiPasswordPolicy *client.PasswordPolicy, tfModel *SignInExperienceModel) {
 	if apiPasswordPolicy != nil {
-		lengthValue := r.buildPasswordPolicyLengthState(ctx, apiPasswordPolicy.Length)
-		characterTypesValue := r.buildPasswordPolicyCharacterTypesState(ctx, apiPasswordPolicy.CharacterTypes)
-		rejectsValue := r.buildPasswordPolicyRejectsState(ctx, apiPasswordPolicy.Rejects)
+		lengthValue := buildPasswordPolicyLength(ctx, apiPasswordPolicy.Length)
+		characterTypesValue := buildPasswordPolicyCharacterTypes(ctx, apiPasswordPolicy.CharacterTypes)
+		rejectsValue := buildPasswordPolicyRejects(ctx, apiPasswordPolicy.Rejects)
 
 		tfModel.PasswordPolicy = NewPasswordPolicyValueMust(
 			PasswordPolicyValue{}.AttributeTypes(ctx),
@@ -166,7 +168,7 @@ func (r *signInExperienceResource) updatePasswordPolicyState(ctx context.Context
 	}
 }
 
-func (r *signInExperienceResource) buildPasswordPolicyLengthState(ctx context.Context, apiLength *client.Length) types.Object {
+func buildPasswordPolicyLength(ctx context.Context, apiLength *client.Length) types.Object {
 	if apiLength != nil {
 		return types.ObjectValueMust(
 			LengthValue{}.AttributeTypes(ctx),
@@ -179,7 +181,7 @@ func (r *signInExperienceResource) buildPasswordPolicyLengthState(ctx context.Co
 
 	return basetypes.NewObjectNull(LengthValue{}.AttributeTypes(ctx))
 }
-func (r *signInExperienceResource) buildPasswordPolicyCharacterTypesState(ctx context.Context, apiCharacterTypes *client.CharacterTypes) types.Object {
+func buildPasswordPolicyCharacterTypes(ctx context.Context, apiCharacterTypes *client.CharacterTypes) types.Object {
 	if apiCharacterTypes != nil {
 		return types.ObjectValueMust(
 			CharacterTypesValue{}.AttributeTypes(ctx),
@@ -191,7 +193,7 @@ func (r *signInExperienceResource) buildPasswordPolicyCharacterTypesState(ctx co
 
 	return basetypes.NewObjectNull(CharacterTypesValue{}.AttributeTypes(ctx))
 }
-func (r *signInExperienceResource) buildPasswordPolicyRejectsState(ctx context.Context, apiRejects *client.Rejects) types.Object {
+func buildPasswordPolicyRejects(ctx context.Context, apiRejects *client.Rejects) types.Object {
 	if apiRejects != nil {
 		return types.ObjectValueMust(
 			RejectsValue{}.AttributeTypes(ctx),
@@ -207,7 +209,7 @@ func (r *signInExperienceResource) buildPasswordPolicyRejectsState(ctx context.C
 	return basetypes.NewObjectNull(RejectsValue{}.AttributeTypes(ctx))
 }
 
-func (r *signInExperienceResource) updateSentinelPolicyState(ctx context.Context, apiSentinelPolicy *client.SentinelPolicy, tfModel *SignInExperienceModel) {
+func convertSentinelPolicy(ctx context.Context, apiSentinelPolicy *client.SentinelPolicy, tfModel *SignInExperienceModel) {
 	if apiSentinelPolicy != nil {
 		tfModel.SentinelPolicy = NewSentinelPolicyValueMust(
 			SentinelPolicyValue{}.AttributeTypes(ctx),
@@ -221,7 +223,7 @@ func (r *signInExperienceResource) updateSentinelPolicyState(ctx context.Context
 	}
 }
 
-func (r *signInExperienceResource) updateSignInMethodsState(ctx context.Context, apiSignIn *client.SignIn, tfModel *SignInExperienceModel) diag.Diagnostics {
+func convertSignInMethods(ctx context.Context, apiSignIn *client.SignIn, tfModel *SignInExperienceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if apiSignIn != nil && apiSignIn.Methods != nil && len(apiSignIn.Methods) > 0 {
@@ -258,7 +260,7 @@ func (r *signInExperienceResource) updateSignInMethodsState(ctx context.Context,
 	return diags
 }
 
-func (r *signInExperienceResource) updateSignUpState(ctx context.Context, apiSignUp *client.SignUp, tfModel *SignInExperienceModel) {
+func convertSignUp(ctx context.Context, apiSignUp *client.SignUp, tfModel *SignInExperienceModel) {
 	if apiSignUp != nil {
 		var secondaryIdentifiersAttr attr.Value
 
@@ -290,7 +292,7 @@ func (r *signInExperienceResource) updateSignUpState(ctx context.Context, apiSig
 		tfModel.SignUp = NewSignUpValueNull()
 	}
 }
-func (r *signInExperienceResource) updateSocialSignInState(ctx context.Context, apiSocialSignIn *client.SocialSignIn, tfModel *SignInExperienceModel) {
+func convertSocialSignIn(ctx context.Context, apiSocialSignIn *client.SocialSignIn, tfModel *SignInExperienceModel) {
 	if apiSocialSignIn != nil {
 		tfModel.SocialSignIn = NewSocialSignInValueMust(
 			SocialSignInValue{}.AttributeTypes(ctx),

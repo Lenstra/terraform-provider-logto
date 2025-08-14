@@ -16,11 +16,13 @@ type SignInExperienceBuilder struct {
 	diags diag.Diagnostics
 }
 
+// NewSignInExperienceBuilder
 func NewSignInExperienceBuilder(ctx context.Context) *SignInExperienceBuilder {
 	return &SignInExperienceBuilder{ctx: ctx}
 }
 
-func (b *SignInExperienceBuilder) FromTfModel(tfModel *SignInExperienceModel) (*client.SignInExperienceModel, diag.Diagnostics) {
+// FromTfPlan convert a Terraform plan model into a client model
+func (b *SignInExperienceBuilder) FromTfPlan(tfModel *SignInExperienceModel) (*client.SignInExperienceModel, diag.Diagnostics) {
 	b.model = *tfModel
 	model := &client.SignInExperienceModel{}
 
