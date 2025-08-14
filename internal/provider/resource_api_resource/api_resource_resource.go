@@ -56,6 +56,11 @@ func (r *apiResourceResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
+	if apiResource == nil {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
 	diags = convertToTerraformModel(ctx, apiResource, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
