@@ -16,12 +16,12 @@ type SignInExperienceBuilder struct {
 	diags diag.Diagnostics
 }
 
-// NewSignInExperienceBuilder
+// NewSignInExperienceBuilder.
 func NewSignInExperienceBuilder(ctx context.Context) *SignInExperienceBuilder {
 	return &SignInExperienceBuilder{ctx: ctx}
 }
 
-// DecodePlan convert a Terraform plan model into a client model
+// DecodePlan convert a Terraform plan model into a client model.
 func (b *SignInExperienceBuilder) DecodePlan(tfModel *SignInExperienceModel) (*client.SignInExperienceModel, diag.Diagnostics) {
 	b.model = *tfModel
 	model := &client.SignInExperienceModel{}
@@ -264,16 +264,16 @@ func (b *SignInExperienceBuilder) buildPasswordPolicyLength(ctx context.Context)
 		intValues[key] = i
 	}
 
-	min, minOk := intValues["min"]
-	max, maxOk := intValues["max"]
-	if !minOk || !maxOk || min > max {
+	minVal, minOk := intValues["min"]
+	maxVal, maxOk := intValues["max"]
+	if !minOk || !maxOk || minVal > maxVal {
 		diags.AddError("Validation Error", "Password policy Min and Max values are not valid or coherent")
 		return nil, diags
 	}
 
 	clientLength := &client.Length{
-		Min: min,
-		Max: max,
+		Min: minVal,
+		Max: maxVal,
 	}
 
 	return clientLength, diags
