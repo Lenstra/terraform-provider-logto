@@ -108,13 +108,6 @@ func SignInExperienceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Specify the primary branding color for the sign-in page (both light/dark mode).",
 				MarkdownDescription: "Specify the primary branding color for the sign-in page (both light/dark mode).",
 			},
-			"custom_content": schema.MapAttribute{
-				ElementType:         types.StringType,
-				Optional:            true,
-				Computed:            true,
-				Description:         "Custom content to display on experience flow pages. the page pathname will be the config key, the content will be the config value.",
-				MarkdownDescription: "Custom content to display on experience flow pages. the page pathname will be the config key, the content will be the config value.",
-			},
 			"custom_css": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
@@ -589,13 +582,6 @@ func SignInExperienceResourceSchema(ctx context.Context) schema.Schema {
 				Optional: true,
 				Computed: true,
 			},
-			"social_sign_in_connector_targets": schema.ListAttribute{
-				ElementType:         types.StringType,
-				Optional:            true,
-				Computed:            true,
-				Description:         "Specify the social sign-in connectors to display on the sign-in page.",
-				MarkdownDescription: "Specify the social sign-in connectors to display on the sign-in page.",
-			},
 			"support_email": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
@@ -627,30 +613,28 @@ func SignInExperienceResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type SignInExperienceModel struct {
-	AgreeToTermsPolicy           types.String              `tfsdk:"agree_to_terms_policy"`
-	Branding                     BrandingValue             `tfsdk:"branding"`
-	CaptchaPolicy                CaptchaPolicyValue        `tfsdk:"captcha_policy"`
-	Color                        ColorValue                `tfsdk:"color"`
-	CustomContent                types.Map                 `tfsdk:"custom_content"`
-	CustomCss                    types.String              `tfsdk:"custom_css"`
-	EmailBlocklistPolicy         EmailBlocklistPolicyValue `tfsdk:"email_blocklist_policy"`
-	Id                           types.String              `tfsdk:"id"`
-	LanguageInfo                 LanguageInfoValue         `tfsdk:"language_info"`
-	Mfa                          MfaValue                  `tfsdk:"mfa"`
-	PasswordPolicy               PasswordPolicyValue       `tfsdk:"password_policy"`
-	PrivacyPolicyUrl             types.String              `tfsdk:"privacy_policy_url"`
-	SentinelPolicy               SentinelPolicyValue       `tfsdk:"sentinel_policy"`
-	SignIn                       SignInValue               `tfsdk:"sign_in"`
-	SignInMode                   types.String              `tfsdk:"sign_in_mode"`
-	SignUp                       SignUpValue               `tfsdk:"sign_up"`
-	SingleSignOnEnabled          types.Bool                `tfsdk:"single_sign_on_enabled"`
-	SocialSignIn                 SocialSignInValue         `tfsdk:"social_sign_in"`
-	SocialSignInConnectorTargets types.List                `tfsdk:"social_sign_in_connector_targets"`
-	SupportEmail                 types.String              `tfsdk:"support_email"`
-	SupportWebsiteUrl            types.String              `tfsdk:"support_website_url"`
-	TenantId                     types.String              `tfsdk:"tenant_id"`
-	TermsOfUseUrl                types.String              `tfsdk:"terms_of_use_url"`
-	UnknownSessionRedirectUrl    types.String              `tfsdk:"unknown_session_redirect_url"`
+	AgreeToTermsPolicy        types.String              `tfsdk:"agree_to_terms_policy"`
+	Branding                  BrandingValue             `tfsdk:"branding"`
+	CaptchaPolicy             CaptchaPolicyValue        `tfsdk:"captcha_policy"`
+	Color                     ColorValue                `tfsdk:"color"`
+	CustomCss                 types.String              `tfsdk:"custom_css"`
+	EmailBlocklistPolicy      EmailBlocklistPolicyValue `tfsdk:"email_blocklist_policy"`
+	Id                        types.String              `tfsdk:"id"`
+	LanguageInfo              LanguageInfoValue         `tfsdk:"language_info"`
+	Mfa                       MfaValue                  `tfsdk:"mfa"`
+	PasswordPolicy            PasswordPolicyValue       `tfsdk:"password_policy"`
+	PrivacyPolicyUrl          types.String              `tfsdk:"privacy_policy_url"`
+	SentinelPolicy            SentinelPolicyValue       `tfsdk:"sentinel_policy"`
+	SignIn                    SignInValue               `tfsdk:"sign_in"`
+	SignInMode                types.String              `tfsdk:"sign_in_mode"`
+	SignUp                    SignUpValue               `tfsdk:"sign_up"`
+	SingleSignOnEnabled       types.Bool                `tfsdk:"single_sign_on_enabled"`
+	SocialSignIn              SocialSignInValue         `tfsdk:"social_sign_in"`
+	SupportEmail              types.String              `tfsdk:"support_email"`
+	SupportWebsiteUrl         types.String              `tfsdk:"support_website_url"`
+	TenantId                  types.String              `tfsdk:"tenant_id"`
+	TermsOfUseUrl             types.String              `tfsdk:"terms_of_use_url"`
+	UnknownSessionRedirectUrl types.String              `tfsdk:"unknown_session_redirect_url"`
 }
 
 var _ basetypes.ObjectTypable = BrandingType{}

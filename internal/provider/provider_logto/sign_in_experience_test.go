@@ -15,7 +15,7 @@ func TestAccSignInExperienceResource(t *testing.T) {
 				Config: ProviderConfig + `
 					resource "logto_sign_in_experience" "test_experience" {
 						color = {
-							primary_color 		 	 = "#4287f5"
+							primary_color 		 	 = "#f54242"
 							dark_primary_color 	 = "#5442f5"
 							is_dark_mode_enabled = false
 						}
@@ -56,8 +56,6 @@ func TestAccSignInExperienceResource(t *testing.T) {
 						social_sign_in = {
 							automatic_account_linking = true
 						}
-
-						social_sign_in_connector_targets = []
 
 						sign_in_mode = "SignIn"
 						custom_css = ".logto_signature{visibility:hidden;}"
@@ -118,7 +116,7 @@ func TestAccSignInExperienceResource(t *testing.T) {
 					resource.TestCheckResourceAttr("logto_sign_in_experience.test_experience", "single_sign_on_enabled", "true"),
 
 					// Verify color attributes
-					resource.TestCheckResourceAttr("logto_sign_in_experience.test_experience", "color.primary_color", "#4287f5"),
+					resource.TestCheckResourceAttr("logto_sign_in_experience.test_experience", "color.primary_color", "#f54242"),
 					resource.TestCheckResourceAttr("logto_sign_in_experience.test_experience", "color.dark_primary_color", "#5442f5"),
 					resource.TestCheckResourceAttr("logto_sign_in_experience.test_experience", "color.is_dark_mode_enabled", "false"),
 

@@ -17,7 +17,7 @@ func (r *signInExperienceResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	signInExperienceModel, diags := NewSignInExperienceBuilder(ctx).FromTfPlan(&plan)
+	signInExperienceModel, diags := NewSignInExperienceBuilder(ctx).DecodePlan(&plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -29,7 +29,7 @@ func (r *signInExperienceResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	diags = convertToTerraformModel(ctx, signInExperienceModel, &plan)
+	diags = convertToTerraformModel(ctx, signInExperienceModel, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -77,7 +77,7 @@ func (r *signInExperienceResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	signInExperienceModel, diags := NewSignInExperienceBuilder(ctx).FromTfPlan(&plan)
+	signInExperienceModel, diags := NewSignInExperienceBuilder(ctx).DecodePlan(&plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -89,7 +89,7 @@ func (r *signInExperienceResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	diags = convertToTerraformModel(ctx, signInExperienceModel, &plan)
+	diags = convertToTerraformModel(ctx, signInExperienceModel, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

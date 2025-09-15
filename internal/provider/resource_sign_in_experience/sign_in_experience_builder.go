@@ -21,8 +21,8 @@ func NewSignInExperienceBuilder(ctx context.Context) *SignInExperienceBuilder {
 	return &SignInExperienceBuilder{ctx: ctx}
 }
 
-// FromTfPlan convert a Terraform plan model into a client model
-func (b *SignInExperienceBuilder) FromTfPlan(tfModel *SignInExperienceModel) (*client.SignInExperienceModel, diag.Diagnostics) {
+// DecodePlan convert a Terraform plan model into a client model
+func (b *SignInExperienceBuilder) DecodePlan(tfModel *SignInExperienceModel) (*client.SignInExperienceModel, diag.Diagnostics) {
 	b.model = *tfModel
 	model := &client.SignInExperienceModel{}
 
@@ -45,13 +45,13 @@ func (b *SignInExperienceBuilder) FromTfPlan(tfModel *SignInExperienceModel) (*c
 	model.SignUp = b.buildSignUp() // NEED TO ENABLE CONNECTORS TO USE IT
 	model.SocialSignIn = b.buildSocialSignIn()
 
-	slice, diagsList := convertListToSlice(b.ctx, b.model.SocialSignInConnectorTargets)
-	b.addDiags(diagsList)
+	// slice, diagsList := convertListToSlice(b.ctx, b.model.SocialSignInConnectorTargets)
+	// b.addDiags(diagsList)
 
-	model.SocialSignInConnectorTargets = slice
+	// model.SocialSignInConnectorTargets = slice
 
-	model.CustomContent = b.buildCustomContent()
-	model.PasswordPolicy = b.buildPasswordPolicy()
+	// model.CustomContent = b.buildCustomContent()
+	model.PasswordPolicy = b.buildPasswordPolicy(b.ctx)
 	model.Mfa = b.buildMfa()
 	model.CaptchaPolicy = b.buildCaptchaPolicy()
 	model.SentinelPolicy = b.buildSentinelPolicy()
@@ -185,37 +185,37 @@ func (b *SignInExperienceBuilder) buildSocialSignIn() *client.SocialSignIn {
 	}
 }
 
-func (b *SignInExperienceBuilder) buildCustomContent() map[string]string {
-	customContent := make(map[string]string)
-	if b.model.CustomContent.IsNull() || b.model.CustomContent.IsUnknown() || b.model.CustomContent.Elements() == nil {
-		return customContent
-	}
-	for key, val := range b.model.CustomContent.Elements() {
-		if v, ok := val.(types.String); ok {
-			customContent[key] = v.ValueString()
-		} else {
-			b.diags.AddWarning("CustomContent Map Conversion", "Map element for key '"+key+"' is not a string type.")
-		}
-	}
-	return customContent
-}
+// func (b *SignInExperienceBuilder) buildCustomContent() map[string]string {
+// 	customContent := make(map[string]string)
+// 	if b.model.CustomContent.IsNull() || b.model.CustomContent.IsUnknown() || b.model.CustomContent.Elements() == nil {
+// 		return customContent
+// 	}
+// 	for key, val := range b.model.CustomContent.Elements() {
+// 		if v, ok := val.(types.String); ok {
+// 			customContent[key] = v.ValueString()
+// 		} else {
+// 			b.diags.AddWarning("CustomContent Map Conversion", "Map element for key '"+key+"' is not a string type.")
+// 		}
+// 	}
+// 	return customContent
+// }
 
-func (b *SignInExperienceBuilder) buildPasswordPolicy() *client.PasswordPolicy {
+func (b *SignInExperienceBuilder) buildPasswordPolicy(ctx context.Context) *client.PasswordPolicy {
 	if b.model.PasswordPolicy.IsNull() || b.model.PasswordPolicy.IsUnknown() {
 		return nil
 	}
 
 	p := &client.PasswordPolicy{}
 
-	length, diagsLength := b.buildPasswordPolicyLength()
+	length, diagsLength := b.buildPasswordPolicyLength(ctx)
 	b.addDiags(diagsLength)
 	p.Length = length
 
-	characterTypes, diagsCharTypes := b.buildPasswordPolicyCharacterTypes()
-	b.addDiags(diagsCharTypes)
+	characterTypes, diag := b.buildPasswordPolicyCharacterTypes(ctx)
+	b.addDiags(diag)
 	p.CharacterTypes = characterTypes
 
-	rejects, diagsRejects := b.buildPasswordPolicyRejects()
+	rejects, diagsRejects := b.buildPasswordPolicyRejects(ctx)
 	b.addDiags(diagsRejects)
 	p.Rejects = rejects
 
@@ -226,116 +226,137 @@ func (b *SignInExperienceBuilder) buildPasswordPolicy() *client.PasswordPolicy {
 	return p
 }
 
-func (b *SignInExperienceBuilder) buildPasswordPolicyLength() (*client.Length, diag.Diagnostics) {
-	var localDiags diag.Diagnostics
+func (b *SignInExperienceBuilder) buildPasswordPolicyLength(ctx context.Context) (*client.Length, diag.Diagnostics) {
+	var diags diag.Diagnostics
 
-	if b.model.PasswordPolicy.Length.IsNull() || b.model.PasswordPolicy.Length.IsUnknown() {
-		return nil, localDiags
+	objectValue, diags := b.model.PasswordPolicy.Length.ToObjectValue(ctx)
+	if diags.HasError() {
+		return nil, diags
 	}
-	lengthAttrs := b.model.PasswordPolicy.Length.Attributes()
 
-	var clientMin, clientMax int64
-	if minVal, ok := lengthAttrs["min"].(basetypes.NumberValue); ok && !minVal.IsNull() && !minVal.IsUnknown() {
-		minBigFloat := minVal.ValueBigFloat()
-		if minBigFloat == nil {
-			localDiags.AddError("Invalid PasswordPolicy Length Min", "The 'min' value for password_policy.length is invalid (nil big.Float).")
-			return nil, localDiags
+	valuesMap := objectValue.Attributes()
+	intValues := make(map[string]int64)
+
+	for key, attrVal := range valuesMap {
+		if attrVal.IsNull() {
+			diags.AddError("Conversion Error", key+" attribute is null")
+			continue
 		}
-		var accuracy big.Accuracy
-		clientMin, accuracy = minBigFloat.Int64()
-		if accuracy == big.Below || accuracy == big.Above {
-			localDiags.AddWarning("PasswordPolicy Length Min Precision", "The 'min' value for password_policy.length had precision loss during conversion to int64.")
+
+		numberVal, ok := attrVal.(basetypes.NumberValue)
+		if !ok {
+			diags.AddError("Conversion Error", key+" attribute is not a NumberValue")
+			continue
 		}
-	} else {
-		localDiags.AddError("Invalid PasswordPolicy Length Min", "The 'min' value for password_policy.length is missing or invalid.")
-		return nil, localDiags
+
+		bf := numberVal.ValueBigFloat()
+		if bf == nil {
+			diags.AddError("Conversion Error", key+" attribute has no value")
+			continue
+		}
+
+		i, accuracy := bf.Int64()
+		if accuracy != big.Exact {
+			diags.AddError("Conversion Error", key+" attribute must be an integer")
+			continue
+		}
+
+		intValues[key] = i
 	}
-	if maxVal, ok := lengthAttrs["max"].(basetypes.NumberValue); ok && !maxVal.IsNull() && !maxVal.IsUnknown() {
-		maxBigFloat := maxVal.ValueBigFloat()
-		if maxBigFloat == nil {
-			localDiags.AddError("Invalid PasswordPolicy Length Max", "The 'max' value for password_policy.length is invalid (nil big.Float).")
-			return nil, localDiags
-		}
-		var accuracy big.Accuracy
-		clientMax, accuracy = maxBigFloat.Int64()
-		if accuracy == big.Below || accuracy == big.Above {
-			localDiags.AddWarning("PasswordPolicy Length Max Precision", "The 'max' value for password_policy.length had precision loss during conversion to int64.")
-		}
-	} else {
-		localDiags.AddError("Invalid PasswordPolicy Length Max", "The 'max' value for password_policy.length is missing or invalid.")
-		return nil, localDiags
+
+	min, minOk := intValues["min"]
+	max, maxOk := intValues["max"]
+	if !minOk || !maxOk || min > max {
+		diags.AddError("Validation Error", "Password policy Min and Max values are not valid or coherent")
+		return nil, diags
 	}
-	return &client.Length{Min: clientMin, Max: clientMax}, localDiags
+
+	clientLength := &client.Length{
+		Min: min,
+		Max: max,
+	}
+
+	return clientLength, diags
 }
 
-func (b *SignInExperienceBuilder) buildPasswordPolicyCharacterTypes() (*client.CharacterTypes, diag.Diagnostics) {
-	var localDiags diag.Diagnostics
+func (b *SignInExperienceBuilder) buildPasswordPolicyCharacterTypes(ctx context.Context) (*client.CharacterTypes, diag.Diagnostics) {
+	var diags diag.Diagnostics
 
-	if b.model.PasswordPolicy.CharacterTypes.IsNull() || b.model.PasswordPolicy.CharacterTypes.IsUnknown() {
-		return nil, localDiags
+	objectValue, diags := b.model.PasswordPolicy.CharacterTypes.ToObjectValue(ctx)
+	if diags.HasError() {
+		return nil, diags
 	}
-	charTypeAttrs := b.model.PasswordPolicy.CharacterTypes.Attributes()
-	var clientMinChar int64
 
-	if minVal, ok := charTypeAttrs["min"].(basetypes.NumberValue); ok && !minVal.IsNull() && !minVal.IsUnknown() {
-		minBigFloat := minVal.ValueBigFloat()
-		if minBigFloat == nil {
-			localDiags.AddError("Invalid PasswordPolicy CharacterTypes Min", "The 'min' value for password_policy.character_types is invalid (nil big.Float).")
-			return nil, localDiags
-		}
-		var accuracy big.Accuracy
-		clientMinChar, accuracy = minBigFloat.Int64()
-		if accuracy == big.Below || accuracy == big.Above {
-			localDiags.AddWarning("PasswordPolicy CharacterTypes Min Precision", "The 'min' value for password_policy.character_types had precision loss during conversion to int64.")
-		}
-	} else {
-		localDiags.AddError("Invalid PasswordPolicy CharacterTypes Min", "The 'min' value for password_policy.character_types is missing or invalid.")
-		return nil, localDiags
+	valuesMap := objectValue.Attributes()
+	attrVal := valuesMap["min"]
+	if attrVal.IsNull() {
+		diags.AddError("Conversion Error", "Min attribute is null")
 	}
-	return &client.CharacterTypes{Min: clientMinChar}, localDiags
+
+	numberVal, ok := attrVal.(basetypes.NumberValue)
+	if !ok {
+		diags.AddError("Conversion Error", "PasswordPolicyCharacterTypes : Min attribute is not a NumberValue")
+	}
+
+	bf := numberVal.ValueBigFloat()
+	if bf == nil {
+		diags.AddError("Conversion Error", "PasswordPolicyCharacterTypes : Min attribute has no value")
+	}
+
+	i, accuracy := bf.Int64()
+	if accuracy != big.Exact {
+		diags.AddError("Conversion Error", "PasswordPolicyCharacterTypes : Min attribute must be an integer")
+	}
+
+	return &client.CharacterTypes{
+		Min: i,
+	}, diags
 }
 
-func (b *SignInExperienceBuilder) buildPasswordPolicyRejects() (*client.Rejects, diag.Diagnostics) {
-	var localDiags diag.Diagnostics
+func (b *SignInExperienceBuilder) buildPasswordPolicyRejects(ctx context.Context) (*client.Rejects, diag.Diagnostics) {
+	var diags diag.Diagnostics
 
-	if b.model.PasswordPolicy.Rejects.IsNull() || b.model.PasswordPolicy.Rejects.IsUnknown() {
-		return nil, localDiags
-	}
-	rejectAttrs := b.model.PasswordPolicy.Rejects.Attributes()
-
-	var clientPwned bool
-	if pwnedVal, ok := rejectAttrs["pwned"].(basetypes.BoolValue); ok && !pwnedVal.IsNull() {
-		clientPwned = pwnedVal.ValueBool()
+	objectValue, diags := b.model.PasswordPolicy.Rejects.ToObjectValue(ctx)
+	if diags.HasError() {
+		return nil, diags
 	}
 
-	var clientRepetitionAndSequence bool
-	if repSeqVal, ok := rejectAttrs["repetition_and_sequence"].(basetypes.BoolValue); ok && !repSeqVal.IsNull() {
-		clientRepetitionAndSequence = repSeqVal.ValueBool()
-	}
+	attrs := objectValue.Attributes()
 
-	var clientUserInfo bool
-	if userInfoVal, ok := rejectAttrs["user_info"].(basetypes.BoolValue); ok && !userInfoVal.IsNull() {
-		clientUserInfo = userInfoVal.ValueBool()
-	}
-
-	var clientWords []string
-	if wordsVal, ok := rejectAttrs["words"].(basetypes.ListValue); ok && !wordsVal.IsNull() && !wordsVal.IsUnknown() {
-		wordsList, diagsList := convertListToSlice(b.ctx, wordsVal)
-
-		localDiags.Append(diagsList...)
-		if localDiags.HasError() {
-			return nil, localDiags
+	getBool := func(key string) bool {
+		if val, ok := attrs[key]; ok && !val.IsNull() {
+			if bVal, ok := val.(types.Bool); ok {
+				return bVal.ValueBool()
+			}
+			diags.AddError("Conversion Error", key+" is not a bool")
 		}
-
-		clientWords = wordsList
+		return false
 	}
 
-	return &client.Rejects{
-		Pwned:                 clientPwned,
-		RepetitionAndSequence: clientRepetitionAndSequence,
-		UserInfo:              clientUserInfo,
-		Words:                 clientWords,
-	}, localDiags
+	getStringList := func(key string) []string {
+		result := []string{}
+		if val, ok := attrs[key]; ok && !val.IsNull() {
+			if listVal, ok := val.(types.List); ok {
+				for _, e := range listVal.Elements() {
+					if s, ok := e.(types.String); ok {
+						result = append(result, s.ValueString())
+					}
+				}
+			} else {
+				diags.AddError("Conversion Error", key+" is not a list of strings")
+			}
+		}
+		return result
+	}
+
+	clientRejects := &client.Rejects{
+		Pwned:                 getBool("pwned"),
+		RepetitionAndSequence: getBool("repetition_and_sequence"),
+		UserInfo:              getBool("user_info"),
+		Words:                 getStringList("words"),
+	}
+
+	return clientRejects, diags
 }
 
 func (b *SignInExperienceBuilder) buildMfa() *client.Mfa {

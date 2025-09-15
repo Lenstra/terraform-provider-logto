@@ -39,33 +39,33 @@ resources:
       method: DELETE
     schema:
       ignores:
-       - username
-       - primaryEmail
-       - primaryPhone
-       - avatar
-       - customData
-       - identities
-       - lastSignInAt
-       - createdAt
-       - updatedAt
-       - profile.address
-       - profile.birthdate
-       - profile.gender
-       - profile.locale
-       - profile.preferredUsername
-       - profile.profile
-       - profile.website
-       - profile.zoneinfo
-       - applicationId
-       - isSuspended
-       - hasPassword
-       - includeSsoIdentities
-       - lastSignInAt
-       - password
-       - passwordAlgorithm
-       - passwordDigest
-       - ssoIdentities
-       - userId
+        - username
+        - primaryEmail
+        - primaryPhone
+        - avatar
+        - customData
+        - identities
+        - lastSignInAt
+        - createdAt
+        - updatedAt
+        - profile.address
+        - profile.birthdate
+        - profile.gender
+        - profile.locale
+        - profile.preferredUsername
+        - profile.profile
+        - profile.website
+        - profile.zoneinfo
+        - applicationId
+        - isSuspended
+        - hasPassword
+        - includeSsoIdentities
+        - lastSignInAt
+        - password
+        - passwordAlgorithm
+        - passwordDigest
+        - ssoIdentities
+        - userId
   sign_in_experience:
     read:
       path: /api/sign-in-exp
@@ -100,7 +100,6 @@ resources:
         - languageInfo
         - agreeToTermsPolicy
         - socialSignIn
-        - socialSignInConnectorTargets
         - signInMode
         - customCss
         - customContent
@@ -110,5 +109,7 @@ resources:
         - captchaPolicy
         - sentinelPolicy
         - tenantId
+        - socialSignInConnectorTargets # Not implemented
+        - forgotPasswordMethods # Not implemented
 
 datasources: []

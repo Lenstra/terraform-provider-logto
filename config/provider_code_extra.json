@@ -205,16 +205,6 @@
 						}
 					},
 					{
-						"map": {
-							"computed_optional_required": "computed_optional",
-							"description": "Custom content to display on experience flow pages. the page pathname will be the config key, the content will be the config value.",
-							"element_type": {
-								"string": {}
-							}
-						},
-						"name": "custom_content"
-					},
-					{
 						"name": "custom_css",
 						"string": {
 							"computed_optional_required": "computed_optional"
@@ -452,16 +442,6 @@
 							],
 							"computed_optional_required": "computed_optional"
 						}
-					},
-					{
-						"list": {
-							"computed_optional_required": "computed_optional",
-							"description": "Specify the social sign-in connectors to display on the sign-in page.",
-							"element_type": {
-								"string": {}
-							}
-						},
-						"name": "social_sign_in_connector_targets"
 					},
 					{
 						"name": "tenant_id",
