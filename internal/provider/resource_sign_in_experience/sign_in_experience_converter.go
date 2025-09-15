@@ -27,7 +27,6 @@ func convertToTerraformModel(ctx context.Context, signInExperience *client.SignI
 		UnknownSessionRedirectUrl: types.StringValue(signInExperience.UnknownSessionRedirectUrl),
 	}
 
-	// diags.Append(convertCustomContent(signInExperience.CustomContent, model)...)
 	diags.Append(convertSignInMethods(ctx, signInExperience.SignIn, model)...)
 	diags.Append(convertSignUp(ctx, signInExperience.SignUp, model)...)
 	diags.Append(convertPasswordPolicy(ctx, signInExperience.PasswordPolicy, model)...)
@@ -40,8 +39,6 @@ func convertToTerraformModel(ctx context.Context, signInExperience *client.SignI
 	convertMfa(signInExperience.Mfa, model)
 	convertSentinelPolicy(signInExperience.SentinelPolicy, model)
 	convertSocialSignIn(signInExperience.SocialSignIn, model)
-
-	// model.SocialSignInConnectorTargets = stringSliceToList(signInExperience.SocialSignInConnectorTargets)
 
 	return diags
 }
@@ -83,23 +80,6 @@ func convertColor(apiColor *client.Color, tfModel *SignInExperienceModel) {
 		tfModel.Color = NewColorValueNull()
 	}
 }
-
-// func convertCustomContent(apiCustomContent map[string]string, tfModel *SignInExperienceModel) diag.Diagnostics {
-// 	var diags diag.Diagnostics
-
-// 	if apiCustomContent == nil {
-// 		apiCustomContent = map[string]string{}
-// 	}
-
-// 	elements := make(map[string]attr.Value, len(apiCustomContent))
-// 	for k, v := range apiCustomContent {
-// 		elements[k] = types.StringValue(v)
-// 	}
-
-// 	tfModel.CustomContent = basetypes.NewMapValueMust(types.StringType, elements)
-
-// 	return diags
-// }
 
 func convertEmailBlocklistPolicy(apiEmailBlocklistPolicy *client.EmailBlocklistPolicy, tfModel *SignInExperienceModel) {
 	if apiEmailBlocklistPolicy != nil {

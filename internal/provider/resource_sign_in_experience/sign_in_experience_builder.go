@@ -44,14 +44,7 @@ func (b *SignInExperienceBuilder) DecodePlan(tfModel *SignInExperienceModel) (*c
 	model.SignIn = b.buildSignIn()
 	model.SignUp = b.buildSignUp() // NEED TO ENABLE CONNECTORS TO USE IT
 	model.SocialSignIn = b.buildSocialSignIn()
-
-	// slice, diagsList := convertListToSlice(b.ctx, b.model.SocialSignInConnectorTargets)
-	// b.addDiags(diagsList)
-
-	// model.SocialSignInConnectorTargets = slice
-
-	// model.CustomContent = b.buildCustomContent()
-	model.PasswordPolicy = b.buildPasswordPolicy(b.ctx)
+	model.PasswordPolicy = b.buildPasswordPolicy()
 	model.Mfa = b.buildMfa()
 	model.CaptchaPolicy = b.buildCaptchaPolicy()
 	model.SentinelPolicy = b.buildSentinelPolicy()
@@ -185,37 +178,22 @@ func (b *SignInExperienceBuilder) buildSocialSignIn() *client.SocialSignIn {
 	}
 }
 
-// func (b *SignInExperienceBuilder) buildCustomContent() map[string]string {
-// 	customContent := make(map[string]string)
-// 	if b.model.CustomContent.IsNull() || b.model.CustomContent.IsUnknown() || b.model.CustomContent.Elements() == nil {
-// 		return customContent
-// 	}
-// 	for key, val := range b.model.CustomContent.Elements() {
-// 		if v, ok := val.(types.String); ok {
-// 			customContent[key] = v.ValueString()
-// 		} else {
-// 			b.diags.AddWarning("CustomContent Map Conversion", "Map element for key '"+key+"' is not a string type.")
-// 		}
-// 	}
-// 	return customContent
-// }
-
-func (b *SignInExperienceBuilder) buildPasswordPolicy(ctx context.Context) *client.PasswordPolicy {
+func (b *SignInExperienceBuilder) buildPasswordPolicy() *client.PasswordPolicy {
 	if b.model.PasswordPolicy.IsNull() || b.model.PasswordPolicy.IsUnknown() {
 		return nil
 	}
 
 	p := &client.PasswordPolicy{}
 
-	length, diagsLength := b.buildPasswordPolicyLength(ctx)
+	length, diagsLength := b.buildPasswordPolicyLength()
 	b.addDiags(diagsLength)
 	p.Length = length
 
-	characterTypes, diag := b.buildPasswordPolicyCharacterTypes(ctx)
+	characterTypes, diag := b.buildPasswordPolicyCharacterTypes()
 	b.addDiags(diag)
 	p.CharacterTypes = characterTypes
 
-	rejects, diagsRejects := b.buildPasswordPolicyRejects(ctx)
+	rejects, diagsRejects := b.buildPasswordPolicyRejects()
 	b.addDiags(diagsRejects)
 	p.Rejects = rejects
 
@@ -226,10 +204,10 @@ func (b *SignInExperienceBuilder) buildPasswordPolicy(ctx context.Context) *clie
 	return p
 }
 
-func (b *SignInExperienceBuilder) buildPasswordPolicyLength(ctx context.Context) (*client.Length, diag.Diagnostics) {
+func (b *SignInExperienceBuilder) buildPasswordPolicyLength() (*client.Length, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	objectValue, diags := b.model.PasswordPolicy.Length.ToObjectValue(ctx)
+	objectValue, diags := b.model.PasswordPolicy.Length.ToObjectValue(b.ctx)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -279,10 +257,10 @@ func (b *SignInExperienceBuilder) buildPasswordPolicyLength(ctx context.Context)
 	return clientLength, diags
 }
 
-func (b *SignInExperienceBuilder) buildPasswordPolicyCharacterTypes(ctx context.Context) (*client.CharacterTypes, diag.Diagnostics) {
+func (b *SignInExperienceBuilder) buildPasswordPolicyCharacterTypes() (*client.CharacterTypes, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	objectValue, diags := b.model.PasswordPolicy.CharacterTypes.ToObjectValue(ctx)
+	objectValue, diags := b.model.PasswordPolicy.CharacterTypes.ToObjectValue(b.ctx)
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -313,10 +291,10 @@ func (b *SignInExperienceBuilder) buildPasswordPolicyCharacterTypes(ctx context.
 	}, diags
 }
 
-func (b *SignInExperienceBuilder) buildPasswordPolicyRejects(ctx context.Context) (*client.Rejects, diag.Diagnostics) {
+func (b *SignInExperienceBuilder) buildPasswordPolicyRejects() (*client.Rejects, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	objectValue, diags := b.model.PasswordPolicy.Rejects.ToObjectValue(ctx)
+	objectValue, diags := b.model.PasswordPolicy.Rejects.ToObjectValue(b.ctx)
 	if diags.HasError() {
 		return nil, diags
 	}
