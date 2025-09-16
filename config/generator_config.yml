@@ -39,32 +39,77 @@ resources:
       method: DELETE
     schema:
       ignores:
-       - username
-       - primaryEmail
-       - primaryPhone
-       - avatar
-       - customData
-       - identities
-       - lastSignInAt
-       - createdAt
-       - updatedAt
-       - profile.address
-       - profile.birthdate
-       - profile.gender
-       - profile.locale
-       - profile.preferredUsername
-       - profile.profile
-       - profile.website
-       - profile.zoneinfo
-       - applicationId
-       - isSuspended
-       - hasPassword
-       - includeSsoIdentities
-       - lastSignInAt
-       - password
-       - passwordAlgorithm
-       - passwordDigest
-       - ssoIdentities
-       - userId
+        - username
+        - primaryEmail
+        - primaryPhone
+        - avatar
+        - customData
+        - identities
+        - lastSignInAt
+        - createdAt
+        - updatedAt
+        - profile.address
+        - profile.birthdate
+        - profile.gender
+        - profile.locale
+        - profile.preferredUsername
+        - profile.profile
+        - profile.website
+        - profile.zoneinfo
+        - applicationId
+        - isSuspended
+        - hasPassword
+        - includeSsoIdentities
+        - lastSignInAt
+        - password
+        - passwordAlgorithm
+        - passwordDigest
+        - ssoIdentities
+        - userId
+  sign_in_experience:
+    read:
+      path: /api/sign-in-exp
+      method: GET
+    create:
+      path: /api/sign-in-exp
+      method: PATCH
+    update:
+      path: /api/sign-in-exp
+      method: PATCH
+    delete:
+      path: /api/sign-in-exp
+      method: PATCH
+    schema:
+      ignores:
+        - color # Move regex gesture in provider_code_extra.json
+        - customUiAssets # Not necessary for now
+        - signUp
+
+        # Following blocked the generators because of bad unsupported
+        # args returned by the API so juste fix it manualy in the provider_code_extra.json
+        - emailBlocklistPolicy
+        - privacyPolicyUrl
+        - signIn
+        - supportEmail
+        - supportWebsiteUrl
+        - termsOfUseUrl
+        - unknownSessionRedirectUrl
+
+        # Move others parameters in provider_code_extra.json too because need to force items as computed
+        - branding
+        - languageInfo
+        - agreeToTermsPolicy
+        - socialSignIn
+        - signInMode
+        - customCss
+        - customContent
+        - passwordPolicy
+        - mfa
+        - singleSignOnEnabled
+        - captchaPolicy
+        - sentinelPolicy
+        - tenantId
+        - socialSignInConnectorTargets # Not implemented
+        - forgotPasswordMethods # Not implemented
 
 datasources: []
