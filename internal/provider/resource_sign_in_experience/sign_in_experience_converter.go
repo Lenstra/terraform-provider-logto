@@ -27,7 +27,7 @@ func convertToTerraformModel(ctx context.Context, signInExperience *client.SignI
 		UnknownSessionRedirectUrl: types.StringValue(signInExperience.UnknownSessionRedirectUrl),
 	}
 
-	diags.Append(convertSignInMethods(ctx, signInExperience.SignIn, model)...)
+	diags.Append(convertSignIn(ctx, signInExperience.SignIn, model)...)
 	diags.Append(convertSignUp(ctx, signInExperience.SignUp, model)...)
 	diags.Append(convertPasswordPolicy(ctx, signInExperience.PasswordPolicy, model)...)
 
@@ -195,7 +195,7 @@ func convertSentinelPolicy(apiSentinelPolicy *client.SentinelPolicy, tfModel *Si
 	}
 }
 
-func convertSignInMethods(ctx context.Context, apiSignIn *client.SignIn, tfModel *SignInExperienceModel) diag.Diagnostics {
+func convertSignIn(ctx context.Context, apiSignIn *client.SignIn, tfModel *SignInExperienceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	var methodsAttrValues []attr.Value
@@ -263,6 +263,7 @@ func convertSignUp(ctx context.Context, apiSignUp *client.SignUp, tfModel *SignI
 
 	return diags
 }
+
 func convertSocialSignIn(apiSocialSignIn *client.SocialSignIn, tfModel *SignInExperienceModel) {
 	if apiSocialSignIn != nil {
 		tfModel.SocialSignIn = SocialSignInValue{

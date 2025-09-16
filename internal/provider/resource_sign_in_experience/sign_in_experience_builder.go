@@ -26,8 +26,8 @@ func (b *SignInExperienceBuilder) DecodePlan(tfModel *SignInExperienceModel) (*c
 	b.model = *tfModel
 	model := &client.SignInExperienceModel{}
 
-	model.TenantId = tfModel.TenantId.ValueString()
 	model.ID = tfModel.Id.ValueString()
+	model.TenantId = tfModel.TenantId.ValueString()
 	model.TermsOfUseUrl = tfModel.TermsOfUseUrl.ValueString()
 	model.PrivacyPolicyUrl = tfModel.PrivacyPolicyUrl.ValueString()
 	model.AgreeToTermsPolicy = tfModel.AgreeToTermsPolicy.ValueString()
