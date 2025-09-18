@@ -33,9 +33,9 @@ func (c *Client) ApiResourceGet(ctx context.Context, id string) (*ApiResourceMod
 
 func (c *Client) ApiResourceList(ctx context.Context, query_params map[string]string) (*[]ApiResourceModel, error) {
 	req := &request{
-		method:           http.MethodGet,
-		path:             path.Join("api/resources"),
-		query_parameters: query_params,
+		method:          http.MethodGet,
+		path:            path.Join("api/resources"),
+		queryParameters: query_params,
 	}
 	res, err := expect(200)(c.do(ctx, req))
 	if err != nil {

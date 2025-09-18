@@ -10,9 +10,9 @@ import (
 
 func (c *Client) ApiResourceScopesList(ctx context.Context, resourceId string, query_params map[string]string) ([]ScopeModel, error) {
 	req := &request{
-		method:           http.MethodGet,
-		path:             path.Join("api/resources", resourceId, "scopes"),
-		query_parameters: query_params,
+		method:          http.MethodGet,
+		path:            path.Join("api/resources", resourceId, "scopes"),
+		queryParameters: query_params,
 	}
 
 	res, err := expect(200)(c.do(ctx, req))
