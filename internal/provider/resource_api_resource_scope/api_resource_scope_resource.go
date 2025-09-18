@@ -53,7 +53,7 @@ func (r *apiResourceScopeResource) Read(ctx context.Context, req resource.ReadRe
 	}
 
 	// Get scope
-	apiResources, err := r.client.ApiResourceGetAll(ctx, queryParams)
+	apiResources, err := r.client.ApiResourceList(ctx, queryParams)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading api_resource_scope", err.Error())
 		return

@@ -31,7 +31,7 @@ func (c *Client) ApiResourceGet(ctx context.Context, id string) (*ApiResourceMod
 	return &apiResource, nil
 }
 
-func (c *Client) ApiResourceGetAll(ctx context.Context, query_params map[string]string) (*[]ApiResourceModel, error) {
+func (c *Client) ApiResourceList(ctx context.Context, query_params map[string]string) (*[]ApiResourceModel, error) {
 	req := &request{
 		method:           http.MethodGet,
 		path:             path.Join("api/resources"),

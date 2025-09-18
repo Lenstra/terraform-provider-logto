@@ -42,7 +42,7 @@ func TestApiResource(t *testing.T) {
 		"page":      "1",
 		"page_size": "20",
 	}
-	apiResources, err := client.ApiResourceGetAll(ctx, queryParams)
+	apiResources, err := client.ApiResourceList(ctx, queryParams)
 	require.NoError(t, err)
 	require.NotNil(t, apiResources)
 	require.NotEmpty(t, apiResources)

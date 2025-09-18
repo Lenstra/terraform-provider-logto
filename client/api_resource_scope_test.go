@@ -50,7 +50,7 @@ func TestApiResourceScope(t *testing.T) {
 		"includeScopes": "yes",
 	}
 
-	allApiResources, err := client.ApiResourceGetAll(ctx, queryParams)
+	allApiResources, err := client.ApiResourceList(ctx, queryParams)
 	require.NoError(t, err)
 	require.NotNil(t, allApiResources)
 
