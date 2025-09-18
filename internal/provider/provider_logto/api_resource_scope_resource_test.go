@@ -40,7 +40,7 @@ func TestAccApiResourceScopeResource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("logto_api_resource_scope.test_api_resource_scope", "created_at"),
 				),
 			},
-			// Cannot test the import of the resource dynamicaly.
+			// Cannot test the import of the resource dynamically.
 			// Update and Read testing
 			{
 				Config: ProviderConfig + `
@@ -109,7 +109,7 @@ func TestAccImportOfApiResourceScopeResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// ImportState testing
 			{
-				// Cannot test the import of the resource dynamicaly so use predefined resources.
+				// Cannot test the import of the resource dynamically so use predefined resources.
 				Config: ProviderConfig + `
 				resource "logto_api_resource_scope" "test_api_resource_scope_for_import" {
 					name        = "test_api_resource_scope_for_import"
