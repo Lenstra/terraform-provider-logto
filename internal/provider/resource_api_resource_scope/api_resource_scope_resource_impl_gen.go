@@ -3,9 +3,7 @@ package resource_api_resource_scope
 
 import (
 	"context"
-
 	"github.com/Lenstra/terraform-provider-logto/client"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -13,7 +11,6 @@ import (
 var (
 	_ resource.Resource                = &apiResourceScopeResource{}
 	_ resource.ResourceWithConfigure   = &apiResourceScopeResource{}
-	_ resource.ResourceWithImportState = &apiResourceScopeResource{}
 )
 
 type apiResourceScopeResource struct {
@@ -43,6 +40,4 @@ func (r *apiResourceScopeResource) Configure(_ context.Context, req resource.Con
 	r.client = client
 }
 
-func (r *apiResourceScopeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
-}
+

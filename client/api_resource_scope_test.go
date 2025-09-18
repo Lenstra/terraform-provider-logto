@@ -47,24 +47,18 @@ func TestApiResourceScope(t *testing.T) {
 	require.Equal(t, expected.Description, scope.Description)
 
 	queryParams := map[string]string{
-		"includeScopes": "yes",
+		"page":      "1",  // Keep defaults
+		"page_size": "20", // Keep defaults
 	}
 
-	allApiResources, err := client.ApiResourceList(ctx, queryParams)
+	apiResourceScopes, err := client.ApiResourceScopesList(ctx, apiResource.ID, queryParams)
 	require.NoError(t, err)
-	require.NotNil(t, allApiResources)
+	require.NotNil(t, apiResourceScopes)
 
 	var foundScope *ScopeModel
-	for _, resource := range *allApiResources {
-		if resource.ID == apiResource.ID {
-			for _, s := range *resource.Scopes {
-				if s.ID == scope.ID {
-					foundScope = &s
-					break
-				}
-			}
-		}
-		if foundScope != nil {
+	for _, s := range apiResourceScopes {
+		if s.ID == scope.ID {
+			foundScope = &s
 			break
 		}
 	}

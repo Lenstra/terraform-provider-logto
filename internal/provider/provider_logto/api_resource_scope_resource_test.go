@@ -40,12 +40,7 @@ func TestAccApiResourceScopeResource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("logto_api_resource_scope.test_api_resource_scope", "created_at"),
 				),
 			},
-			// ImportState testing
-			{
-				ResourceName:      "logto_api_resource_scope.test_api_resource_scope",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
+			// Cannot test the import of the resource dynamicaly.
 			// Update and Read testing
 			{
 				Config: ProviderConfig + `
@@ -103,6 +98,28 @@ func TestAccApiResourceScopeResource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("logto_api_resource_scope.test_api_resource_scope", "tenant_id"),
 					resource.TestCheckResourceAttrSet("logto_api_resource_scope.test_api_resource_scope", "created_at"),
 				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+func TestAccImportOfApiResourceScopeResource(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// ImportState testing
+			{
+				// Cannot test the import of the resource dynamicaly so use predefined resources.
+				Config: ProviderConfig + `
+				resource "logto_api_resource_scope" "test_api_resource_scope_for_import" {
+					name        = "test_api_resource_scope_for_import"
+					resource_id = logto_api_resource.test_api_resource_for_import.id
+				}
+    `,
+				ResourceName:      "logto_api_resource_scope.test_api_resource_scope_for_import",
+				ImportState:       true,
+				ImportStateVerify: false, // Verification disabled because API returns computed fields (TenantId, CreatedAt) not present in HCL
+				ImportStateId:     "4vt7qldcnbutcmqfbcvuv/vyvo1yxu1u3yutqmzz3rb",
 			},
 			// Delete testing automatically occurs in TestCase
 		},

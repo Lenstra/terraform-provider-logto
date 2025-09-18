@@ -3,10 +3,9 @@ package resource_api_resource
 
 import (
 	"context"
-
 	"github.com/Lenstra/terraform-provider-logto/client"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
 // Ensure the implementation satisfies the expected interfaces.

@@ -8,6 +8,26 @@ import (
 	"path"
 )
 
+func (c *Client) ApiResourceScopesList(ctx context.Context, resourceId string, query_params map[string]string) ([]ScopeModel, error) {
+	req := &request{
+		method:           http.MethodGet,
+		path:             path.Join("api/resources", resourceId, "scopes"),
+		query_parameters: query_params,
+	}
+
+	res, err := expect(200)(c.do(ctx, req))
+	if err != nil {
+		return nil, err
+	}
+
+	var returnScope []ScopeModel
+	if err := decode(res.Body, &returnScope); err != nil {
+		return nil, err
+	}
+
+	return returnScope, nil
+}
+
 func (c *Client) ApiResourceScopeCreate(ctx context.Context, resourceId string, scope *ScopeModel) (*ScopeModel, error) {
 	req := &request{
 		method: http.MethodPost,
