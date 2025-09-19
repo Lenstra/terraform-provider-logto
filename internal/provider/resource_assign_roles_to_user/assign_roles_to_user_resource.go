@@ -6,6 +6,7 @@ import (
 
 	"github.com/Lenstra/terraform-provider-logto/client"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -18,7 +19,11 @@ func (r *assignRolesToUserResource) Create(ctx context.Context, req resource.Cre
 		return
 	}
 
-	roleIds, userId := decodePlan(plan)
+	roleIds, userId, diag := decodePlan(plan)
+	resp.Diagnostics.Append(diag...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	err := r.client.AssignRolesForUser(ctx, roleIds, userId)
 	if err != nil {
@@ -87,7 +92,11 @@ func (r *assignRolesToUserResource) Update(ctx context.Context, req resource.Upd
 		return
 	}
 
-	roleIds, userId := decodePlan(plan)
+	roleIds, userId, diag := decodePlan(plan)
+	resp.Diagnostics.Append(diag...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	err := r.client.UpdateRolesForUser(ctx, roleIds, userId)
 	if err != nil {
@@ -108,7 +117,12 @@ func (r *assignRolesToUserResource) Delete(ctx context.Context, req resource.Del
 		return
 	}
 
-	roleIdslist := convertSetToSlice(state.RoleIds)
+	roleIdslist, diag := convertSetToSlice(state.RoleIds)
+	resp.Diagnostics.Append(diag...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	for _, roleId := range roleIdslist {
 		err := r.client.DeleteRolesForUser(ctx, roleId, state.UserId.ValueString())
 		if err != nil {
@@ -117,25 +131,39 @@ func (r *assignRolesToUserResource) Delete(ctx context.Context, req resource.Del
 	}
 }
 
-func decodePlan(plan AssignRolesToUserModel) (*client.RoleIdsModel, string) {
-	list := convertSetToSlice(plan.RoleIds)
+func decodePlan(plan AssignRolesToUserModel) (*client.RoleIdsModel, string, diag.Diagnostics) {
+	list, diags := convertSetToSlice(plan.RoleIds)
+	if diags.HasError() {
+		return nil, "", diags
+	}
 
 	roleIds := &client.RoleIdsModel{
 		RoleIds: list,
 	}
 	userId := plan.UserId.ValueString()
 
-	return roleIds, userId
+	return roleIds, userId, diags
 }
 
-func convertSetToSlice(set types.Set) []string {
+func convertSetToSlice(set types.Set) ([]string, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	elems := set.Elements()
-	result := make([]string, len(elems))
-	for i, e := range elems {
-		result[i] = e.(types.String).ValueString()
+	result := make([]string, 0, len(elems))
+
+	for _, e := range elems {
+		s, ok := e.(types.String)
+		if !ok {
+			diags.AddError(
+				"Error converting element in set to string",
+				"Expected a types.String but got a different type",
+			)
+			continue
+		}
+		result = append(result, s.ValueString())
 	}
 
-	return result
+	return result, diags
 }
 
 func convertToStateId(userId string, roleIds []string) string {

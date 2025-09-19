@@ -119,8 +119,6 @@ func (r *apiResourceResource) Delete(ctx context.Context, req resource.DeleteReq
 	if err != nil {
 		resp.Diagnostics.AddError("Error deleting api_resource", err.Error())
 	}
-
-	
 }
 
 func decodePlan(ctx context.Context, plan ApiResourceModel) (*client.ApiResourceModel, diag.Diagnostics) {

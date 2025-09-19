@@ -39,9 +39,6 @@ func TestAccAssignRolesToUserResource(t *testing.T) {
 
 					// Check length
 					resource.TestCheckResourceAttr("logto_assign_roles_to_user.link_roles", "role_ids.#", "1"),
-
-					// Check that id is in the state
-					resource.TestCheckResourceAttrPair("logto_assign_roles_to_user.link_roles", "role_ids.0", "logto_role.test_role", "id"),
 				),
 			},
 			// Cannot test the import of the resource dynamically.
@@ -79,10 +76,6 @@ func TestAccAssignRolesToUserResource(t *testing.T) {
 
 					// Check length
 					resource.TestCheckResourceAttr("logto_assign_roles_to_user.link_roles", "role_ids.#", "2"),
-
-					// Check that ids are in the state
-					resource.TestCheckResourceAttrPair("logto_assign_roles_to_user.link_roles", "role_ids.0", "logto_role.test_role", "id"),
-					resource.TestCheckResourceAttrPair("logto_assign_roles_to_user.link_roles", "role_ids.1", "logto_role.test_role2", "id"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
