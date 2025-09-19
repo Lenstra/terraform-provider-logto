@@ -3,6 +3,8 @@
 FEATURES:
 
 - **New Resource:** `role` (#11)
+- **New Resource:** `api_resource` (#11)
+- **New Resource:** `api_resource_scope` (#11)
 
 ENHANCEMENTS:
 
