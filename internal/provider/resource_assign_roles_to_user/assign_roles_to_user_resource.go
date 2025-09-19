@@ -141,20 +141,3 @@ func convertSetToSlice(set types.Set) []string {
 func convertToStateId(userId string, roleIds []string) string {
 	return userId + "/" + strings.Join(roleIds, "-")
 }
-
-func reorderRolesAccordingToPlan(apiRoles []string, planRoles types.Set) []attr.Value {
-	planOrder := convertSetToSlice(planRoles)
-	roleMap := make(map[string]struct{})
-	for _, r := range apiRoles {
-		roleMap[r] = struct{}{}
-	}
-
-	// reconstruire la liste selon l’ordre du plan
-	var ordered []attr.Value
-	for _, r := range planOrder {
-		if _, ok := roleMap[r]; ok {
-			ordered = append(ordered, types.StringValue(r))
-		}
-	}
-	return ordered
-}
