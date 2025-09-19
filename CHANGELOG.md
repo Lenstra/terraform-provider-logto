@@ -1,3 +1,16 @@
+## 0.0.12
+
+FEATURES:
+
+- **New Resource:** `role` (#11)
+
+ENHANCEMENTS:
+
+- `terraform-generator`: Add support for multiple word resource names (#17)
+
+NOTES:
+- Update of the golangci-lint (#16)
+
 ## 0.0.11
 
 BUG FIXES:
