@@ -93,3 +93,7 @@ type RoleModel struct {
 	IsDefault   bool     `json:"isDefault,omitempty"`
 	ScopeIds    []string `json:"scopeIds,omitempty"`
 }
+
+type RoleIdsModel struct {
+	RoleIds []string `json:"roleIds"`
+}
