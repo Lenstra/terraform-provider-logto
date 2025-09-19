@@ -12,6 +12,7 @@ on:
 # GitHub considers creating releases and uploading assets as writing contents.
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   goreleaser:
@@ -25,12 +26,29 @@ jobs:
         with:
           go-version-file: 'go.mod'
           cache: true
+
+      - name: Get GPG secrets on Vault
+        id: get_gpg_on_vault
+        uses: hashicorp/vault-action@v3
+        with:
+          url: https://vault.lenstra.co
+          method: jwt
+          path: github
+          role: terraform-registry-gpg
+          caCertificate: ${{ secrets.LENSTRA_CRT }}
+          clientCertificate: ${{ secrets.CERT_PEM }}
+          clientKey: ${{ secrets.PRIVATE_KEY_PEM }}
+          secrets: |
+            secret/gpg/terraform_registry private_key
+            secret/gpg/terraform_registry passphrase
+
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@01dd5d3ca463c7f10f7f4f7b4f177225ac661ee4 # v6.1.0
         id: import_gpg
         with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
+          gpg_private_key: ${{ steps.get_gpg_on_vault.outputs.private_key }}
+          passphrase: ${{ steps.get_gpg_on_vault.outputs.passphrase }}
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
         with:
