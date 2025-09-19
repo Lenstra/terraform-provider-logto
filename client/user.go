@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"path"
 )
@@ -113,10 +112,6 @@ func (c *Client) AssignRolesForUser(ctx context.Context, roleIds *RoleIdsModel, 
 	if userId == "" || len(roleIds.RoleIds) <= 0 {
 		return errEmptyID
 	}
-
-	fmt.Println("AssignRolesForUser")
-	fmt.Print(roleIds)
-	fmt.Print(*roleIds)
 
 	req := &request{
 		method: http.MethodPost,

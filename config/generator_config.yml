@@ -121,5 +121,27 @@ resources:
         - tenantId
         - scopeIds
         - type
+  # Used to generate the base of the resource schema contains in the provider_code_extra.
+  # Cannot generate the full resource using generator_config. It has no attributes (all are ignored).
+  # assign_roles_to_user:
+  #   read:
+  #     path: /api/users/{userId}/roles
+  #     method: GET
+  #   create:
+  #     path: /api/users/{userId}/roles
+  #     method: POST
+  #   update:
+  #     path: /api/users/{userId}/roles
+  #     method: PUT
+  #   delete:
+  #     path: /api/users/{userId}/roles
+  #     method: DELETE
+  #   schema:
+  #     ignores:
+  #       - roleIds # We will set this to types.Set instead of types.List so remove it from generation
+  #       - userId # Need to be required but generator make it optional/computed
+  #       - page # Not needed (IDK why included here)
+  #       - page_size (IDK why included here)
+  #       - search_params (IDK why included here)
 
 datasources: []
