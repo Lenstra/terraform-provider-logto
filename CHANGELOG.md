@@ -1,3 +1,12 @@
+## 0.0.13
+
+IMPROVEMENTS:
+
+- The `logto_user` now has a `role_ids` attribute. (#22)
+
+NOTES:
+- Update of the documentation examples (#21)
+
 ## 0.0.12
 
 FEATURES:
