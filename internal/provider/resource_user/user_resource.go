@@ -29,23 +29,17 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	convertToTerraformModel(ctx, user, nil, &state)
-	diags = resp.State.Set(ctx, state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	if roleIds != nil {
 		err = r.client.AssignRolesForUser(ctx, roleIds, user.ID)
 		if err != nil {
 			resp.Diagnostics.AddError("Error during assignation of role(s) for user", err.Error())
 			return
 		}
-		convertToTerraformModel(ctx, user, roleIds, &state)
-		diags = resp.State.Set(ctx, state)
-		resp.Diagnostics.Append(diags...)
 	}
+
+	convertToTerraformModel(ctx, user, roleIds, &state)
+	diags = resp.State.Set(ctx, state)
+	resp.Diagnostics.Append(diags...)
 }
 
 func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
