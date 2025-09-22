@@ -19,15 +19,15 @@ resource "logto_role" "role" {
   type        = "User"
 }
 
-resource "logto_user" "test_user" {
-  name          = "test_user_modified"
-  primary_email = "test_user@test.fr"
+resource "logto_user" "user" {
+  name          = "user_name"
+  primary_email = "user_primary_email@example.fr"
 
   profile = {
-    family_name = "test_family_name_modified"
-    given_name  = "test_given_name_modified"
-    middle_name = "test_middle_name_modified"
-    nickname    = "test_nickname_modified"
+    family_name = "family name"
+    given_name  = "given name"
+    middle_name = "middle name"
+    nickname    = "nickname"
   }
 
   role_ids = [
