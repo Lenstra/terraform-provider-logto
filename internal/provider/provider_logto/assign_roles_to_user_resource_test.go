@@ -99,7 +99,7 @@ func TestAccImportOfAssignRolesToUserResource(t *testing.T) {
 					user_id = mkgcd5t7j06q
 				}
     `,
-				ResourceName:      "logto_api_resource_scope.test_api_resource_scope_for_import",
+				ResourceName:      "logto_api_resource_scope.test_assign_roles_to_user_for_import",
 				ImportState:       true,
 				ImportStateVerify: true,                                                       // Verification disabled because API returns computed fields (TenantId, CreatedAt) not present in HCL
 				ImportStateId:     "mkgcd5t7j06q/4wytu0yi21r4a6dwf9dtk-wz548z4mwyzanyotp01fo", // user_id/role_id_1-role_id_2

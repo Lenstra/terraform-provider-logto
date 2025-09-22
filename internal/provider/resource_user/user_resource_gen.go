@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -69,6 +70,15 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 				Optional: true,
 				Computed: true,
 			},
+			"role_ids": schema.SetAttribute{
+				ElementType:         types.StringType,
+				Optional:            true,
+				Description:         "An array of API resource role IDs to assign.",
+				MarkdownDescription: "An array of API resource role IDs to assign.",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.RequiresReplace(),
+				},
+			},
 			"username": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -87,6 +97,7 @@ type UserModel struct {
 	Name         types.String `tfsdk:"name"`
 	PrimaryEmail types.String `tfsdk:"primary_email"`
 	Profile      ProfileValue `tfsdk:"profile"`
+	RoleIds      types.Set    `tfsdk:"role_ids"`
 	Username     types.String `tfsdk:"username"`
 }
 
