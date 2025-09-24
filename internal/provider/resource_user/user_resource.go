@@ -29,6 +29,11 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
+	// Put the user into the state before assigning roles in case of error during roles assignment
+	convertToTerraformModel(ctx, user, nil, &state)
+	diags = resp.State.Set(ctx, state)
+	resp.Diagnostics.Append(diags...)
+
 	if roleIds != nil {
 		err = r.client.AssignRolesForUser(ctx, roleIds, user.ID)
 		if err != nil {
