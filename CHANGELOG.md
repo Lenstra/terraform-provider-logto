@@ -1,3 +1,10 @@
+## 0.0.14
+
+BUG FIXES:
+
+- Fix update support for the `logto_user` resource.
+
+
 ## 0.0.13
 
 IMPROVEMENTS:
