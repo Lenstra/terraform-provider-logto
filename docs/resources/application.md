@@ -40,5 +40,4 @@ resource "logto_application" "app" {
 
 - `id` (String) The unique identifier of the application.
 - `is_admin` (Boolean)
-- `secrets` (Map of String)
 - `tenant_id` (String)

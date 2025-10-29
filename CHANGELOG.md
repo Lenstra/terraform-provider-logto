@@ -1,3 +1,34 @@
+## 0.0.14
+
+BUG FIXES:
+
+- Fix update support for the `logto_user` resource.
+
+
+## 0.0.13
+
+IMPROVEMENTS:
+
+- The `logto_user` now has a `role_ids` attribute. (#22)
+
+NOTES:
+- Update of the documentation examples (#21)
+
+## 0.0.12
+
+FEATURES:
+
+- **New Resource:** `role` (#11)
+- **New Resource:** `api_resource` (#11)
+- **New Resource:** `api_resource_scope` (#11)
+
+ENHANCEMENTS:
+
+- `terraform-generator`: Add support for multiple word resource names (#17)
+
+NOTES:
+- Update of the golangci-lint (#16)
+
 ## 0.0.11
 
 BUG FIXES:

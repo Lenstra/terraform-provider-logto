@@ -94,17 +94,25 @@ type request struct {
 	method                             string
 	path                               string
 	body                               any
-	raw_body                           io.Reader
+	rawBody                            io.Reader
 	headers                            map[string]string
+	queryParameters                    map[string]string
 	application_id, application_secret string
 }
 
 func (r *request) toHttpRequest(ctx context.Context, conf *Config) (*http.Request, error) {
-	url := fmt.Sprintf("https://%s/%s", conf.Hostname, r.path)
-	req, err := http.NewRequestWithContext(ctx, r.method, url, nil)
+	reqUrl := fmt.Sprintf("https://%s/%s", conf.Hostname, r.path)
+
+	req, err := http.NewRequestWithContext(ctx, r.method, reqUrl, nil)
 	if err != nil {
 		return nil, err
 	}
+
+	params := url.Values{}
+	for key, value := range r.queryParameters {
+		params.Add(key, value)
+	}
+	req.URL.RawQuery = params.Encode()
 
 	if r.body != nil {
 		body, err := json.Marshal(r.body)
@@ -116,8 +124,8 @@ func (r *request) toHttpRequest(ctx context.Context, conf *Config) (*http.Reques
 		req.Header.Set("Content-Type", "application/json")
 	}
 
-	if r.raw_body != nil {
-		req.Body = io.NopCloser(r.raw_body)
+	if r.rawBody != nil {
+		req.Body = io.NopCloser(r.rawBody)
 	}
 
 	for key, value := range r.headers {
@@ -145,7 +153,7 @@ func (c *Client) getAccessToken(ctx context.Context) (string, error) {
 		path:               "oidc/token",
 		application_id:     c.conf.ApplicationID,
 		application_secret: c.conf.ApplicationSecret,
-		raw_body:           strings.NewReader(data.Encode()),
+		rawBody:            strings.NewReader(data.Encode()),
 		headers: map[string]string{
 			"Content-Type": "application/x-www-form-urlencoded",
 		},
