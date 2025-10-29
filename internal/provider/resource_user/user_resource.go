@@ -160,6 +160,7 @@ func decodePlan(_ context.Context, plan UserModel) (*client.UserModel, *client.R
 	}
 
 	user := &client.UserModel{
+		ID:           plan.Id.ValueString(),
 		PrimaryEmail: plan.PrimaryEmail.ValueString(),
 		Username:     plan.Username.ValueString(),
 		Name:         plan.Name.ValueString(),
