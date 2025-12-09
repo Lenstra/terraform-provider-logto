@@ -35,3 +35,4 @@ func (d *applicationDataSource) Configure(_ context.Context, req datasource.Conf
 		d.client = client
 	}
 }
+
