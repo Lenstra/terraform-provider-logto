@@ -122,4 +122,18 @@ resources:
         - scopeIds
         - type
 
-datasources: []
+data_sources:
+ application:
+  read:
+    path: /api/applications/{id}
+    method: GET
+  schema:
+    ignores:
+      - secret
+      - oidcClientMetadata
+      - createdAt
+      - customClientMetadata
+      - customData
+      - isAdmin
+      - isThirdParty
+      - protectedAppMetadata
