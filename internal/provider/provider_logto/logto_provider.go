@@ -5,7 +5,12 @@ import (
 	"os"
 
 	"github.com/Lenstra/terraform-provider-logto/internal/provider/datasource_application"
+	"github.com/Lenstra/terraform-provider-logto/internal/provider/resource_api_resource"
+	"github.com/Lenstra/terraform-provider-logto/internal/provider/resource_api_resource_scope"
 	"github.com/Lenstra/terraform-provider-logto/internal/provider/resource_application"
+	"github.com/Lenstra/terraform-provider-logto/internal/provider/resource_role"
+	"github.com/Lenstra/terraform-provider-logto/internal/provider/resource_user"
+	"github.com/rs/zerolog"
 
 	"github.com/Lenstra/terraform-provider-logto/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -163,6 +168,11 @@ func (p *logtoProvider) Configure(ctx context.Context, req provider.ConfigureReq
 		ApplicationID:     applicationID,
 		ApplicationSecret: applicationSecret,
 	}
+
+	if os.Getenv("TF_PROVIDER_LOGTO_LOG") != "" {
+		conf.Logger = zerolog.New(os.Stdout)
+	}
+
 	apiClient, err := client.NewClient(conf)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to build Logto client", err.Error())
@@ -188,5 +198,9 @@ func (p *logtoProvider) DataSources(_ context.Context) []func() datasource.DataS
 func (p *logtoProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		resource_application.ApplicationResource,
+		resource_user.UserResource,
+		resource_api_resource.ApiResourceResource,
+		resource_api_resource_scope.ApiResourceScopeResource,
+		resource_role.RoleResource,
 	}
 }

@@ -1,109 +1,34 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"os"
+	"strings"
+	"unicode"
 
 	"os/exec"
+
+	tfgen "github.com/Lenstra/terraform-provider-logto/scripts/terraform-generator"
 )
 
-type Spec struct {
-	Version     string      `json:"version"`
-	Provider    any         `json:"provider"`
-	Resources   []*Resource `json:"resources,omitempty"`
-	Datasources []*Resource `json:"datasources,omitempty"`
-}
-
-type Resource struct {
-	Name   string `json:"name"`
-	Schema Schema `json:"schema"`
-}
-
-type Schema struct {
-	Attributes []any `json:"attributes"`
+func main() {
+	err := Main()
+	if err != nil {
+		log.Fatalf("err: %v", err)
+	}
 }
 
 func Main() error {
-	resp, err := http.Get("https://openapi.logto.io/source.yaml")
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("expected 200 status code, got %s", resp.Status)
-	}
-
-	f, err := os.CreateTemp("", "openapi")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(f.Name())
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	_, err = f.Write(data)
-	if err != nil {
-		return err
-	}
-	f.Close()
-
-	cmd := exec.Command(
-		"tfplugingen-openapi",
-		"generate",
-		"--config=./config/generator_config.yml",
-		"--output=./provider_code_spec.json",
-		f.Name(),
-	)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-
-	spec, err := readSpec("provider_code_spec.json")
-	if err != nil {
-		return err
-	}
-	extra, err := readSpec("config/provider_code_extra.json")
+	ctx := context.Background()
+	spec, extra, err := tfgen.Load(ctx)
 	if err != nil {
 		return err
 	}
 
-	// use the provider given in our extra conf
-	spec.Provider = extra.Provider
-
-	resources := map[string]*Resource{}
-	for _, r := range extra.Resources {
-		resources[r.Name] = r
-	}
-	datasources := map[string]*Resource{}
-	for _, r := range extra.Datasources {
-		datasources[r.Name] = r
-	}
-
-	for _, resource := range spec.Resources {
-		extraResource, found := resources[resource.Name]
-		if found {
-			resource.Schema.Attributes = append(
-				resource.Schema.Attributes,
-				extraResource.Schema.Attributes...,
-			)
-		}
-	}
-	for _, datasource := range spec.Datasources {
-		extraDatasource, found := datasources[datasource.Name]
-		if found {
-			datasource.Schema.Attributes = append(
-				datasource.Schema.Attributes,
-				extraDatasource.Schema.Attributes...,
-			)
-		}
-	}
+	tfgen.Update(spec, extra)
 
 	content, err := json.MarshalIndent(spec, "", "\t")
 	if err != nil {
@@ -114,38 +39,145 @@ func Main() error {
 		return err
 	}
 
-	cmd = exec.Command(
+	input := "provider_code_spec.json"
+	output := "internal/provider"
+	if err := generate(input, output); err != nil {
+		return err
+	}
+	return generateAdditionalFiles(output)
+}
+
+func generate(input, output string) error {
+	cmd := exec.Command(
 		"tfplugingen-framework",
 		"generate",
 		"all",
-		"--input=./provider_code_spec.json",
-		"--output=internal/provider",
+		"--input="+input,
+		"--output="+output,
 	)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
+	return cmd.Run()
+}
+
+func generateAdditionalFiles(output string) error {
+	entries, err := os.ReadDir(output)
+	if err != nil {
 		return err
 	}
 
+	for _, entry := range entries {
+		if entry.IsDir() && strings.HasPrefix(entry.Name(), "resource_") {
+			packageName := strings.TrimPrefix(entry.Name(), "resource_")
+			resourceName := toCamelCase(packageName)
+			path := fmt.Sprintf("internal/provider/%s/%s_resource_impl_gen.go", entry.Name(), packageName)
+			content := []byte(template(packageName, resourceName))
+			if err := os.WriteFile(path, content, 0o644); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
-func readSpec(path string) (*Spec, error) {
-	content, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
+func template(packageName, resourceName string) string {
+	noImportState := map[string]struct{}{
+		"api_resource_scope": {},
 	}
-	var extra Spec
-	if err := json.Unmarshal(content, &extra); err != nil {
-		return nil, err
+
+	skipImportState := false
+	if _, found := noImportState[packageName]; found {
+		skipImportState = true
 	}
-	return &extra, nil
+
+	importStateBlock := ""
+
+	varBlock := "_ resource.Resource                = &" + resourceName + "Resource{}\n" +
+		"\t_ resource.ResourceWithConfigure   = &" + resourceName + "Resource{}"
+
+	imports := `"context"
+	"github.com/Lenstra/terraform-provider-logto/client"
+	"github.com/hashicorp/terraform-plugin-framework/resource"`
+
+	if !skipImportState {
+		importStateBlock = fmt.Sprintf(`func (r *%[1]sResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}`, resourceName)
+
+		varBlock += "\n\t_ resource.ResourceWithImportState = &" + resourceName + "Resource{}"
+
+		imports += `
+	"github.com/hashicorp/terraform-plugin-framework/path"`
+	}
+
+	return fmt.Sprintf(`// Code generated by terraform-generator DO NOT EDIT.
+package resource_%[3]s
+
+import (
+	%[4]s
+)
+
+// Ensure the implementation satisfies the expected interfaces.
+var (
+	%[5]s
+)
+
+type %[1]sResource struct {
+	client *client.Client
 }
 
-func main() {
-	err := Main()
-	if err != nil {
-		log.Fatalf("err: %v", err)
-		os.Exit(1)
+func %[2]sResource() resource.Resource {
+	return &%[1]sResource{}
+}
+
+func (r *%[1]sResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_%[3]s"
+}
+
+func (r *%[1]sResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = %[2]sResourceSchema(ctx)
+}
+
+func (r *%[1]sResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
 	}
+	client, ok := req.ProviderData.(*client.Client)
+	if !ok {
+		return
+	}
+	r.client = client
+}
+
+%[6]s
+`, resourceName, toPascalCase(packageName), packageName, imports, varBlock, importStateBlock)
+}
+
+func toCamelCase(s string) string {
+	parts := strings.FieldsFunc(s, func(r rune) bool {
+		return r == '_' || r == '-' || unicode.IsSpace(r)
+	})
+
+	for i, p := range parts {
+		if len(p) > 0 {
+			if i == 0 {
+				parts[i] = strings.ToLower(p)
+			} else {
+				parts[i] = strings.ToUpper(p[:1]) + strings.ToLower(p[1:])
+			}
+		}
+	}
+	return strings.Join(parts, "")
+}
+
+func toPascalCase(s string) string {
+	parts := strings.FieldsFunc(s, func(r rune) bool {
+		return r == '_' || r == '-' || unicode.IsSpace(r)
+	})
+	for i, p := range parts {
+		if len(p) > 0 {
+			parts[i] = strings.ToUpper(p[:1]) + strings.ToLower(p[1:])
+		}
+	}
+	return strings.Join(parts, "")
 }

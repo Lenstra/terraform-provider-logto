@@ -6,84 +6,32 @@ import (
 	"github.com/Lenstra/terraform-provider-logto/client"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
-
-// Ensure the implementation satisfies the expected interfaces.
-var (
-	_ resource.Resource                = &applicationResource{}
-	_ resource.ResourceWithConfigure   = &applicationResource{}
-	_ resource.ResourceWithImportState = &applicationResource{}
-)
-
-type applicationResource struct {
-	client *client.Client
-}
-
-func ApplicationResource() resource.Resource {
-	return &applicationResource{}
-}
-
-func (r *applicationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_application"
-}
-
-func (r *applicationResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = ApplicationResourceSchema(ctx)
-}
-
-func (r *applicationResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-	client, ok := req.ProviderData.(*client.Client)
-	if !ok {
-		return
-	}
-	r.client = client
-}
-
-func (r *applicationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
-}
 
 func (r *applicationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan ApplicationModel
+	var plan, state ApplicationModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	application := &client.ApplicationModel{
-		Name:        plan.Name.ValueString(),
-		Type:        plan.Type.ValueString(),
-		Description: plan.Description.ValueString(),
-	}
-
-	oidcClientMetadata, customClientMetadata := r.buildClientMetadata(ctx, plan)
-
-	application.OidcClientMetadata = oidcClientMetadata
-	application.CustomClientMetadata = customClientMetadata
-
+	application := decodePlan(ctx, plan)
 	application, err := r.client.ApplicationCreate(ctx, application)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating application", err.Error())
 		return
 	}
 
-	secretsValue, diags := r.getSecrets(ctx, application.ID)
+	diags = convertToTerraformModel(ctx, application, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	plan.Secrets = secretsValue
-
-	r.updateApplicationState(application, &plan)
-
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
@@ -101,15 +49,16 @@ func (r *applicationResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	secretsValue, diags := r.getSecrets(ctx, application.ID)
+	if application == nil {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
+	diags = convertToTerraformModel(ctx, application, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	state.Secrets = secretsValue
-
-	r.updateApplicationState(application, &state)
-
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -121,24 +70,7 @@ func (r *applicationResource) Update(ctx context.Context, req resource.UpdateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	diags = req.State.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	application := &client.ApplicationModel{
-		ID:          state.Id.ValueString(),
-		Name:        plan.Name.ValueString(),
-		Type:        state.Type.ValueString(),
-		Description: plan.Description.ValueString(),
-	}
-
-	oidcClientMetadata, customClientMetadata := r.buildClientMetadata(ctx, plan)
-
-	application.OidcClientMetadata = oidcClientMetadata
-	application.CustomClientMetadata = customClientMetadata
+	application := decodePlan(ctx, plan)
 
 	application, err := r.client.ApplicationUpdate(ctx, application)
 	if err != nil {
@@ -146,16 +78,12 @@ func (r *applicationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	secretsValue, diags := r.getSecrets(ctx, application.ID)
+	diags = convertToTerraformModel(ctx, application, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if diags.HasError() {
 		return
 	}
-	plan.Secrets = secretsValue
-
-	r.updateApplicationState(application, &plan)
-
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
@@ -173,84 +101,63 @@ func (r *applicationResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 }
 
-func convertListToSlice(ctx context.Context, list types.List) []string {
-	if list.IsNull() || list.IsUnknown() {
-		return []string{}
+func decodePlan(ctx context.Context, plan ApplicationModel) *client.ApplicationModel {
+	model := &client.ApplicationModel{
+		ID:                 plan.Id.ValueString(),
+		Name:               plan.Name.ValueString(),
+		Type:               plan.Type.ValueString(),
+		Description:        plan.Description.ValueString(),
+		IsThirdParty:       plan.IsThirdParty.ValueBool(),
+		OidcClientMetadata: &client.OidcClientMetadata{},
 	}
-	var result []string
-	list.ElementsAs(ctx, &result, false)
-	return result
-}
+	plan.RedirectUris.ElementsAs(ctx, &model.OidcClientMetadata.RedirectUris, true)
+	plan.PostLogoutRedirectUris.ElementsAs(ctx, &model.OidcClientMetadata.PostLogoutRedirectUris, true)
 
-func stringSliceToList(slice []string) types.List {
-	values := make([]attr.Value, len(slice))
-	for i, s := range slice {
-		values[i] = types.StringValue(s)
-	}
-	return types.ListValueMust(types.StringType, values)
-}
-
-func (r *applicationResource) updateApplicationState(application *client.ApplicationModel, plan *ApplicationModel) {
-	plan.Id = types.StringValue(application.ID)
-	plan.TenantId = types.StringValue(application.TenantId)
-	plan.Name = types.StringValue(application.Name)
-	plan.Description = types.StringValue(application.Description)
-	plan.Type = types.StringValue(application.Type)
-
-	if application.OidcClientMetadata != nil {
-		updateListField(application.OidcClientMetadata.RedirectUris, &plan.RedirectUris)
-		updateListField(application.OidcClientMetadata.PostLogoutRedirectUris, &plan.PostLogoutRedirectUris)
-	}
-
-	if application.CustomClientMetadata != nil {
-		updateListField(application.CustomClientMetadata.CorsAllowedOrigins, &plan.CorsAllowedOrigins)
-	}
-}
-
-func updateListField(slice []string, plan *types.List) {
-	if len(slice) == 0 {
-		*plan = types.ListNull(types.StringType)
-	} else {
-		*plan = stringSliceToList(slice)
-	}
-}
-
-func (r *applicationResource) buildClientMetadata(ctx context.Context, plan ApplicationModel) (*client.OidcClientMetadata, *client.CustomClientMetadata) {
-	oidcClientMetadata := &client.OidcClientMetadata{
-		RedirectUris:           []string{},
-		PostLogoutRedirectUris: []string{},
-	}
-
-	redirectUris := convertListToSlice(ctx, plan.RedirectUris)
-	oidcClientMetadata.RedirectUris = redirectUris
-
-	postLogoutRedirectUris := convertListToSlice(ctx, plan.PostLogoutRedirectUris)
-	oidcClientMetadata.PostLogoutRedirectUris = postLogoutRedirectUris
-
-	var customClientMetadata *client.CustomClientMetadata
 	if !plan.CorsAllowedOrigins.IsNull() {
-		corsAllowedOrigins := convertListToSlice(ctx, plan.CorsAllowedOrigins)
-
-		customClientMetadata = &client.CustomClientMetadata{
-			CorsAllowedOrigins: corsAllowedOrigins,
-		}
+		model.CustomClientMetadata = &client.CustomClientMetadata{}
+		plan.CorsAllowedOrigins.ElementsAs(ctx, &model.CustomClientMetadata.CorsAllowedOrigins, true)
 	}
 
-	return oidcClientMetadata, customClientMetadata
+	return model
 }
 
-func (r *applicationResource) getSecrets(ctx context.Context, applicationID string) (types.Map, diag.Diagnostics) {
-	secrets, err := r.client.GetApplicationSecrets(ctx, applicationID)
-	if err != nil {
-		return types.MapNull(types.StringType), diag.Diagnostics{
-			diag.NewErrorDiagnostic("Error getting secrets", err.Error()),
+func convertToTerraformModel(ctx context.Context, app *client.ApplicationModel, model *ApplicationModel) (diags diag.Diagnostics) {
+	*model = ApplicationModel{
+		Id:           types.StringValue(app.ID),
+		TenantId:     types.StringValue(app.TenantId),
+		Name:         types.StringValue(app.Name),
+		Description:  types.StringValue(app.Description),
+		Type:         types.StringValue(app.Type),
+		IsThirdParty: types.BoolValue(app.IsThirdParty),
+		IsAdmin:      types.BoolValue(app.IsAdmin),
+	}
+
+	if app.OidcClientMetadata != nil {
+		model.RedirectUris, diags = convertList(ctx, types.StringType, app.OidcClientMetadata.RedirectUris)
+		if diags.HasError() {
+			return
+		}
+		model.PostLogoutRedirectUris, diags = convertList(ctx, types.StringType, app.OidcClientMetadata.PostLogoutRedirectUris)
+		if diags.HasError() {
+			return
 		}
 	}
 
-	secretsMap := make(map[string]attr.Value, len(secrets))
-	for _, v := range secrets {
-		secretsMap[v.Name] = types.StringValue(v.Value)
+	var corsAllowedOrigins []string
+	if app.CustomClientMetadata != nil {
+		corsAllowedOrigins = app.CustomClientMetadata.CorsAllowedOrigins
+	}
+	model.CorsAllowedOrigins, diags = convertList(ctx, types.StringType, corsAllowedOrigins)
+	if diags.HasError() {
+		return
 	}
 
-	return types.MapValue(types.StringType, secretsMap)
+	return
+}
+
+func convertList[E any](ctx context.Context, elementType attr.Type, list []E) (basetypes.ListValue, diag.Diagnostics) {
+	if len(list) == 0 {
+		return basetypes.NewListValueFrom(ctx, elementType, []attr.Value{})
+	}
+	return basetypes.NewListValueFrom(ctx, elementType, list)
 }
