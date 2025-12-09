@@ -11,33 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-var _ datasource.DataSource = &applicationDataSource{}
-
-type applicationDataSource struct {
-	client *client.Client
-}
-
-func ApplicationDataSource() datasource.DataSource {
-	return &applicationDataSource{}
-}
-
-func (d *applicationDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_application"
-}
-
-func (d *applicationDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = ApplicationDataSourceSchema(ctx)
-}
-
-func (d *applicationDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-	if client, ok := req.ProviderData.(*client.Client); ok {
-		d.client = client
-	}
-}
-
 func (d *applicationDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state ApplicationModel
 	diags := req.Config.Get(ctx, &state)
