@@ -6,7 +6,9 @@ import (
 	"github.com/Lenstra/terraform-provider-logto/client"
 	"github.com/Lenstra/terraform-provider-logto/internal/provider/utils"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 var _ datasource.DataSource = &applicationDataSource{}
@@ -43,42 +45,58 @@ func (d *applicationDataSource) Read(ctx context.Context, req datasource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	application, err := d.client.ApplicationGet(ctx, state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading application", err.Error())
 		return
 	}
+
 	secretsValue, diags := utils.GetSecrets(ctx, d.client, application.ID)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	state.Secrets = secretsValue
-	state.Id = types.StringValue(application.ID)
-	state.TenantId = types.StringValue(application.TenantId)
-	state.Name = types.StringValue(application.Name)
-	state.Description = types.StringValue(application.Description)
-	state.Type = types.StringValue(application.Type)
-	if application.OidcClientMetadata != nil {
-		if len(application.OidcClientMetadata.RedirectUris) == 0 {
-			state.RedirectUris = types.ListNull(types.StringType)
-		} else {
-			state.RedirectUris = utils.StringSliceToList(application.OidcClientMetadata.RedirectUris)
-		}
 
-		if len(application.OidcClientMetadata.PostLogoutRedirectUris) == 0 {
-			state.PostLogoutRedirectUris = types.ListNull(types.StringType)
-		} else {
-			state.PostLogoutRedirectUris = utils.StringSliceToList(application.OidcClientMetadata.PostLogoutRedirectUris)
-		}
+	diags = convertToTerraformModel(ctx, application, secretsValue, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if application.CustomClientMetadata != nil {
-		if len(application.CustomClientMetadata.CorsAllowedOrigins) == 0 {
-			state.CorsAllowedOrigins = types.ListNull(types.StringType)
-		} else {
-			state.CorsAllowedOrigins = utils.StringSliceToList(application.CustomClientMetadata.CorsAllowedOrigins)
-		}
-	}
+
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
+}
+
+func convertToTerraformModel(ctx context.Context, app *client.ApplicationModel, secretsValue basetypes.MapValue, model *ApplicationModel) (diags diag.Diagnostics) {
+	*model = ApplicationModel{
+		Id:          types.StringValue(app.ID),
+		TenantId:    types.StringValue(app.TenantId),
+		Name:        types.StringValue(app.Name),
+		Description: types.StringValue(app.Description),
+		Type:        types.StringValue(app.Type),
+		Secrets:     secretsValue,
+	}
+
+	if app.OidcClientMetadata != nil {
+		model.RedirectUris, diags = utils.ConvertList(ctx, types.StringType, app.OidcClientMetadata.RedirectUris)
+		if diags.HasError() {
+			return
+		}
+		model.PostLogoutRedirectUris, diags = utils.ConvertList(ctx, types.StringType, app.OidcClientMetadata.PostLogoutRedirectUris)
+		if diags.HasError() {
+			return
+		}
+	}
+
+	var corsAllowedOrigins []string
+	if app.CustomClientMetadata != nil {
+		corsAllowedOrigins = app.CustomClientMetadata.CorsAllowedOrigins
+	}
+	model.CorsAllowedOrigins, diags = utils.ConvertList(ctx, types.StringType, corsAllowedOrigins)
+	if diags.HasError() {
+		return
+	}
+
+	return
 }

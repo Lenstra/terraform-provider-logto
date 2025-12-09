@@ -4,22 +4,16 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-func ConvertListToSlice(ctx context.Context, list types.List) []string {
-	if list.IsNull() || list.IsUnknown() {
-		return []string{}
+// ConvertList converts a Go slice of any type that implements attr.Value into a basetypes.ListValue.
+// - If the slice is empty, returns an empty Terraform list (never null).
+// - Returns Diagnostics from NewListValueFrom if any error occurs during conversion.
+func ConvertList[E any](ctx context.Context, elementType attr.Type, list []E) (basetypes.ListValue, diag.Diagnostics) {
+	if len(list) == 0 {
+		return basetypes.NewListValueFrom(ctx, elementType, []attr.Value{})
 	}
-	var result []string
-	list.ElementsAs(ctx, &result, false)
-	return result
-}
-
-func StringSliceToList(slice []string) types.List {
-	values := make([]attr.Value, len(slice))
-	for i, s := range slice {
-		values[i] = types.StringValue(s)
-	}
-	return types.ListValueMust(types.StringType, values)
+	return basetypes.NewListValueFrom(ctx, elementType, list)
 }
