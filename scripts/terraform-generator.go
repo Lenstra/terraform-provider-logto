@@ -154,9 +154,7 @@ func (r *%[1]sResource) Configure(_ context.Context, req resource.ConfigureReque
 }
 
 func toCamelCase(s string) string {
-	parts := strings.FieldsFunc(s, func(r rune) bool {
-		return r == '_' || r == '-' || unicode.IsSpace(r)
-	})
+	parts := getStringParts(s)
 
 	for i, p := range parts {
 		if len(p) > 0 {
@@ -167,17 +165,28 @@ func toCamelCase(s string) string {
 			}
 		}
 	}
-	return strings.Join(parts, "")
+
+	return joinParts(parts)
 }
 
 func toPascalCase(s string) string {
-	parts := strings.FieldsFunc(s, func(r rune) bool {
-		return r == '_' || r == '-' || unicode.IsSpace(r)
-	})
+	parts := getStringParts(s)
+
 	for i, p := range parts {
 		if len(p) > 0 {
 			parts[i] = strings.ToUpper(p[:1]) + strings.ToLower(p[1:])
 		}
 	}
+
+	return joinParts(parts)
+}
+
+func getStringParts(s string) []string {
+	return strings.FieldsFunc(s, func(r rune) bool {
+		return r == '_' || r == '-' || unicode.IsSpace(r)
+	})
+}
+
+func joinParts(parts []string) string {
 	return strings.Join(parts, "")
 }
