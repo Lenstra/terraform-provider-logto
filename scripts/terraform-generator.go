@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"strings"
 	"unicode"
-
-	"os/exec"
 
 	tfgen "github.com/Lenstra/terraform-provider-logto/scripts/terraform-generator"
 )
@@ -166,7 +165,7 @@ func toCamelCase(s string) string {
 		}
 	}
 
-	return joinParts(parts)
+	return joinStringParts(parts)
 }
 
 func toPascalCase(s string) string {
@@ -178,7 +177,7 @@ func toPascalCase(s string) string {
 		}
 	}
 
-	return joinParts(parts)
+	return joinStringParts(parts)
 }
 
 func getStringParts(s string) []string {
@@ -187,6 +186,6 @@ func getStringParts(s string) []string {
 	})
 }
 
-func joinParts(parts []string) string {
+func joinStringParts(parts []string) string {
 	return strings.Join(parts, "")
 }
