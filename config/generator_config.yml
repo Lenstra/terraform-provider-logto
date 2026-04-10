@@ -66,6 +66,7 @@ resources:
         - passwordDigest
         - ssoIdentities
         - userId
+        - includePasswordHash
   api_resource:
     read:
       path: /api/resources/{id}
