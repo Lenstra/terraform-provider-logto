@@ -658,19 +658,7 @@
 							"element_type": {
 								"string": {}
 							},
-							"description": "An array of API resource role IDs to assign.",
-							"plan_modifiers": [
-								{
-									"custom": {
-										"imports": [
-											{
-												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
-											}
-										],
-										"schema_definition": "setplanmodifier.RequiresReplace()"
-									}
-								}
-							]
+							"description": "An array of API resource role IDs to assign."
 						}
 					}
 				]
