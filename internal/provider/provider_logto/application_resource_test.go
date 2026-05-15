@@ -8,7 +8,7 @@ import (
 
 func TestAccApplicationResourceWithoutTypeUpdate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -61,7 +61,7 @@ func TestAccApplicationResourceWithoutTypeUpdate(t *testing.T) {
 
 func TestAccApplicationResourceWithTypeUpdate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -114,7 +114,7 @@ func TestAccApplicationResourceWithTypeUpdate(t *testing.T) {
 
 func TestAccApplicationResourceWithRedirectUrisAndNotPostLogoutRedirectUris(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -178,7 +178,7 @@ func TestAccApplicationResourceWithRedirectUrisAndNotPostLogoutRedirectUris(t *t
 
 func TestAccApplicationResourceWithRedirectUrisAndPostLogoutRedirectUris(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -255,7 +255,7 @@ func TestAccApplicationResourceWithRedirectUrisAndPostLogoutRedirectUris(t *test
 
 func TestAccApplicationResourceWithNotRedirectUrisAndPostLogoutRedirectUris(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -325,7 +325,7 @@ func TestAccApplicationResourceWithNotRedirectUrisAndPostLogoutRedirectUris(t *t
 
 func TestAccApplicationResourceWithCorsAllowedOrigins(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
